@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="transition-colors duration-200">
   <head>
@@ -1560,4 +1561,3133 @@
       });
     </script>
   </body>
+=======
+
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-200">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arbiscan Clone</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- React & Recharts for Charts -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+
+    <script>
+      // Tailwind CSS Configuration
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            keyframes: {
+              marquee: {
+                "0%": { transform: "translateX(0%)" },
+                "100%": { transform: "translateX(-50%)" },
+              },
+            },
+            animation: {
+              marquee: "marquee 30s linear infinite",
+            },
+            colors: {
+              arbitrum: {
+                blue: "#28a0f0",
+                "blue-dark": "#145f8f",
+                red: "#f05128",
+              },
+            },
+            backgroundColor: {
+              dark: {
+                primary: '#0f172a',    // Darker blue-gray
+                secondary: '#1e293b',  // Dark blue-gray
+                card: '#1e293b',       // Card background
+                hover: '#334155',      // Lighter for hover
+                accent: '#3b82f6'      // Accent color
+              }
+            },
+            textColor: {
+              dark: {
+                primary: '#e2e8f0',
+                secondary: '#94a3b8',
+                accent: '#60a5fa',
+                muted: '#64748b',
+                heading: '#f8fafc'
+              }
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/css">
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      /* Utility to hide scrollbars */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      /* Mobile Menu Animation */
+      #mobile-menu {
+        transition: all 0.3s ease-in-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none; /* Prevent interaction when hidden */
+      }
+      #mobile-menu.is-open {
+        max-height: 300px; /* Adjust based on your content */
+        opacity: 1;
+        pointer-events: auto; /* Allow interaction when visible */
+      }
+    </style>
+    
+    <!-- Theme Management Script -->
+    <script>
+      function initializeTheme() {
+        // Set initial theme based on localStorage or system preference
+        if (localStorage.getItem('color-theme') === 'dark' || 
+            (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      // Initialize theme immediately to prevent flash
+      initializeTheme();
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+
+        function updateThemeIcon(isDark) {
+          // Update icons
+          themeToggleLightIcon.classList.toggle('hidden', !isDark);
+          themeToggleDarkIcon.classList.toggle('hidden', isDark);
+          
+          // Update button aria-label
+          themeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+
+        function setTheme(isDark) {
+          // Update classes
+          document.documentElement.classList.toggle('dark', isDark);
+          
+          // Store preference
+          localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+          
+          // Update UI
+          updateThemeIcon(isDark);
+        }
+
+        // Set initial icon state
+        updateThemeIcon(document.documentElement.classList.contains('dark'));
+
+        // Handle click events
+        themeToggleBtn.addEventListener('click', function() {
+          const willBeDark = !document.documentElement.classList.contains('dark');
+          setTheme(willBeDark);
+        });
+
+        // Handle system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+          if (!localStorage.getItem('color-theme')) {
+            setTheme(e.matches);
+          }
+        });
+
+        // Make button visible after initialization
+        themeToggleBtn.classList.remove('opacity-0');
+      });
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-dark-primary text-sm text-gray-800 dark:text-dark-primary transition-colors duration-200">
+    <div id="app">
+      <!-- Header -->
+      <header
+        class="bg-white dark:bg-dark-secondary border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 relative"
+      >
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            <div class="flex items-center space-x-8">
+              <div class="flex-shrink-0">
+                <span
+                  class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-400 dark:to-blue-600"
+                >
+                  ARBISCAN
+                </span>
+              </div>
+              <div
+                class="hidden md:flex items-center bg-gray-100 dark:bg-dark-secondary rounded-md p-1 text-xs"
+              >
+                <span class="text-blue-600 dark:text-blue-400 font-semibold px-2">ETH</span>
+                <span class="dark:text-dark-primary">$3,450.12</span>
+                <span class="text-gray-400 dark:text-dark-muted mx-2">|</span>
+                <span class="dark:text-dark-primary">Avg Fee (Gwei): 2.5</span>
+              </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+              <nav id="desktop-nav" class="flex space-x-6">
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Analytics
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >DeFi
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors">Leaderboard</a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Blockchain
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Resources
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+              </nav>
+              <div class="flex items-center space-x-4">
+                <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+                <a
+                  href="#"
+                  class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover text-gray-700 dark:text-dark-primary transition-colors"
+                >
+                  <span role="img" aria-label="language">🇺🇸</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+
+                <button 
+                  id="theme-toggle" 
+                  class="opacity-0 transition-all duration-300 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-500 dark:text-gray-400"
+                  aria-label="Toggle dark mode"
+                  title="Toggle dark mode"
+                >
+                  <!-- Sun icon -->
+                  <svg
+                    id="theme-toggle-light-icon"
+                    class="w-6 h-6 hidden transition-transform duration-200 rotate-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                    ></path>
+                  </svg>
+                  <!-- Moon icon -->
+                  <svg
+                    id="theme-toggle-dark-icon"
+                    class="w-6 h-6 hidden transition-transform duration-200 rotate-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+              <button
+                id="mobile-menu-button"
+                class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-700 dark:text-dark-primary"
+                aria-label="Toggle menu"
+                aria-expanded="false"
+                aria-controls="mobile-menu"
+              >
+                <svg
+                  id="menu-open-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16m-7 6h7"
+                  ></path>
+                </svg>
+                <svg
+                  id="menu-close-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6 hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div
+          id="mobile-menu"
+          class="absolute left-0 w-full bg-white dark:bg-dark-secondary shadow-lg dark:shadow-xl md:hidden z-40 border-t border-gray-200 dark:border-gray-700"
+          aria-hidden="true"
+        >
+          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Analytics</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >DeFi</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Leaderboard</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Blockchain</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Resources</a
+            >
+          </div>
+        </div>
+      </header>
+
+      <script>
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+          const menuButton = document.getElementById('mobile-menu-button');
+          const mobileMenu = document.getElementById('mobile-menu');
+          const menuOpenIcon = document.getElementById('menu-open-icon');
+          const menuCloseIcon = document.getElementById('menu-close-icon');
+
+          function toggleMenu() {
+            const isOpen = mobileMenu.classList.contains('is-open');
+            
+            // Toggle menu state
+            mobileMenu.classList.toggle('is-open');
+            
+            // Toggle icons
+            menuOpenIcon.classList.toggle('hidden', !isOpen);
+            menuCloseIcon.classList.toggle('hidden', isOpen);
+            
+            // Add aria-expanded attribute for accessibility
+            menuButton.setAttribute('aria-expanded', !isOpen);
+          }
+
+          // Toggle menu on button click
+          menuButton.addEventListener('click', toggleMenu);
+
+          // Close menu on click outside
+          document.addEventListener('click', function(event) {
+            const isClickInside = menuButton.contains(event.target) || mobileMenu.contains(event.target);
+            if (!isClickInside && mobileMenu.classList.contains('is-open')) {
+              toggleMenu();
+            }
+          });
+
+          // Close menu on escape key
+          document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
+              toggleMenu();
+            }
+          });
+        });
+      </script>
+
+      <!-- Main Content -->
+      <main class="p-4 md:p-6 lg:p-8 dark:bg-dark-primary transition-colors">
+        <div class="max-w-screen-2xl mx-auto space-y-6">
+          <!-- Hero Section -->
+          <section
+            class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg p-6 md:p-10 text-white text-center mb-4"
+          >
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">
+              Explore Arbitrum L2 Blockchain
+            </h1>
+            <form id="search-form" class="max-w-2xl mx-auto relative" onsubmit="handleSearch(event)">
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Search transactions, blocks, programs and tokens"
+                class="w-full p-3 pl-10 pr-12 rounded-md text-gray-800 dark:text-gray-900 bg-white dark:bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 border border-gray-200"
+                autocomplete="off"
+                minlength="4"
+                required
+              />
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div id="search-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
+                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              </div>
+            </form>
+            
+            <!-- Search Results -->
+            <div id="search-results" class="hidden mt-4 bg-white dark:bg-dark-secondary rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20 text-left border border-gray-200 dark:border-gray-700">
+              <div class="p-4">
+                <div id="search-message" class="text-gray-600 dark:text-dark-secondary text-sm"></div>
+                <div id="search-items" class="mt-2 space-y-2"></div>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-blue-200">
+              Sponsored: GMX - Trade BTC, ETH, and other top cryptocurrencies
+              with up to 50x leverage directly from your wallet.
+            </p>
+          </section>
+
+          <!-- Search Functionality -->
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const searchForm = document.getElementById('search-form');
+              const searchInput = document.getElementById('search-input');
+              const searchSpinner = document.getElementById('search-spinner');
+              const searchResults = document.getElementById('search-results');
+              const searchMessage = document.getElementById('search-message');
+              const searchItems = document.getElementById('search-items');
+              
+              let searchTimeout;
+              let isSearching = false;
+
+              // Handle search input with debounce
+              searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+                
+                if (query.length < 4) {
+                  searchResults.classList.add('hidden');
+                  return;
+                }
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => performSearch(query), 500);
+              });
+
+              // Handle search form submission
+              async function handleSearch(e) {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query.length >= 4) {
+                  await performSearch(query);
+                }
+              }
+              window.handleSearch = handleSearch;
+
+              // Perform the search
+              async function performSearch(query) {
+                if (isSearching) return;
+                
+                try {
+                  isSearching = true;
+                  searchSpinner.classList.remove('hidden');
+                  searchResults.classList.remove('hidden');
+                  searchMessage.textContent = 'Searching...';
+                  searchItems.innerHTML = '';
+
+                  // Simulated API call - replace with your actual API endpoint
+                  const response = await simulateSearch(query);
+                  
+                  if (response.items.length > 0) {
+                    searchMessage.textContent = `Found ${response.items.length} results:`;
+                    response.items.forEach(item => {
+                      const element = createSearchResultElement(item);
+                      searchItems.appendChild(element);
+                    });
+                  } else {
+                    searchMessage.textContent = 'No results found';
+                  }
+                } catch (error) {
+                  searchMessage.textContent = 'Error performing search. Please try again.';
+                  console.error('Search error:', error);
+                } finally {
+                  isSearching = false;
+                  searchSpinner.classList.add('hidden');
+                }
+              }
+
+              // Simulate search API call (replace with actual API implementation)
+              function simulateSearch(query) {
+                return new Promise((resolve) => {
+                  setTimeout(() => {
+                    // Mock response - replace with actual API call
+                    resolve({
+                      items: [
+                        {
+                          type: 'transaction',
+                          hash: '0x' + Math.random().toString(16).slice(2, 42),
+                          timestamp: new Date().toISOString()
+                        },
+                        {
+                          type: 'block',
+                          number: Math.floor(Math.random() * 1000000),
+                          timestamp: new Date().toISOString()
+                        }
+                      ]
+                    });
+                  }, 1000);
+                });
+              }
+
+              // Create search result element
+              function createSearchResultElement(item) {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-gray-50 dark:hover:bg-dark-hover rounded-md cursor-pointer border border-gray-100 dark:border-gray-700 transition-colors';
+                
+                let content = '';
+                if (item.type === 'transaction') {
+                  content = `
+                    <div class="flex items-center">
+                      <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">TX</span>
+                      <span class="ml-2 text-sm font-medium text-gray-900 dark:text-dark-primary">${item.hash}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-dark-secondary">${new Date(item.timestamp).toLocaleString()}</div>
+                  `;
+                } else if (item.type === 'block') {
+                  content = `
+                    <div class="flex items-center">
+                      <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">Block</span>
+                      <span class="ml-2 text-sm font-medium text-gray-900 dark:text-dark-primary">#${item.number}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-dark-secondary">${new Date(item.timestamp).toLocaleString()}</div>
+                  `;
+                }
+                
+                div.innerHTML = content;
+                div.addEventListener('click', () => {
+                  // Handle click - implement navigation to detail page
+                  console.log('Clicked:', item);
+                });
+                
+                return div;
+              }
+
+              // Close search results when clicking outside
+              document.addEventListener('click', function(e) {
+                if (!searchForm.contains(e.target)) {
+                  searchResults.classList.add('hidden');
+                }
+              });
+
+              // Handle escape key
+              document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                  searchResults.classList.add('hidden');
+                  searchInput.blur();
+                }
+              });
+            });
+          </script>
+
+          <!-- Top Markets -->
+          <div class="bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2 mb-6 shadow-sm dark:shadow-xl dark:shadow-black/10">
+            <div
+              class="flex items-center overflow-x-auto whitespace-nowrap scrollbar-hide"
+            >
+              <span
+                class="font-semibold text-xs px-3 py-1 bg-gray-100 dark:bg-dark-hover text-gray-800 dark:text-dark-primary rounded-md mr-4 flex-shrink-0"
+                >⭐ Top Markets</span
+              >
+              <div class="flex items-center space-x-6 animate-marquee">
+                <!-- Market items will be injected here by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Market Cap (USD)</h3>
+                <div class="text-2xl font-semibold mb-6">$1.07B</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>Circulating Supply (ARB)</span>
+                    <span>1,275,000,000</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Total Supply (ARB)</span>
+                    <span>10,000,000,000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">L1 Batch</h3>
+                <div class="text-2xl font-semibold mb-6">350718</div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                  <div
+                    class="bg-blue-500 h-1.5 rounded-full"
+                    style="width: 75%"
+                  ></div>
+                </div>
+                <div class="text-right text-gray-500 text-xs mb-6">75%</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>L2 Block</span><span>23849102</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Time Since</span><span>2m 15s ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Network (Transactions)</h3>
+                <div class="text-2xl font-semibold mb-6">337,203,194</div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  <div>
+                    <div class="text-gray-500">L2 Block Height</div>
+                    <div>23849102</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500">Unique Addresses</div>
+                    <div>5,102,349</div>
+                  </div>
+                  <div class="bg-blue-50 text-blue-600 p-2 rounded-md">
+                    <div class="text-gray-500">TPS</div>
+                    <div class="font-semibold">8.5</div>
+                  </div>
+                  <div class="flex items-center">
+                    <div>
+                      <div class="text-gray-500 flex items-center">
+                        Gas Price (Gwei)
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="w-4 h-4 ml-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          ></path>
+                        </svg>
+                      </div>
+                      <div>0.12</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Total Value Locked (USD)</h3>
+                <div class="text-2xl font-semibold mb-6">$1.71B</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>Bridge TVL</span><span>$1.52B (88.8%)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Native TVL</span><span>$190M (11.2%)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <a href="#" class="text-blue-600 font-semibold text-sm"
+                  >DeFi Dashboard →</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Content Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Latest Transactions -->
+              <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-semibold">Latest Transactions</h3>
+                  <button
+                    class="text-xs border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100"
+                  >
+                    Customize
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full min-w-[600px]">
+                    <thead>
+                      <tr class="text-left text-xs text-gray-500 border-b">
+                        <th class="py-2 font-medium flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-4 h-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                          </svg>
+                          Txn Hash
+                        </th>
+                        <th class="py-2 font-medium flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-4 h-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                          </svg>
+                          Time
+                        </th>
+                        <th class="py-2 font-medium">Block</th>
+                        <th class="py-2 font-medium">Method</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactions-body">
+                      <!-- Transaction rows will be injected here by JS -->
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center mt-4">
+                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                    >VIEW ALL TRANSACTIONS →</a
+                  >
+                </div>
+              </div>
+              <!-- Token Dashboard -->
+              <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-semibold">Token Dashboard</h3>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full min-w-[600px]">
+                    <thead>
+                      <tr class="text-left text-xs text-gray-500 border-b">
+                        <th class="py-2 font-medium">Token</th>
+                        <th class="py-2 font-medium">Symbol</th>
+                        <th class="py-2 font-medium">Price</th>
+                        <th class="py-2 font-medium">Market Cap (F.D)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tokens-body">
+                      <!-- Token rows will be injected here by JS -->
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center mt-4">
+                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                    >VISIT TOKEN DASHBOARD →</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- DeFi Dashboard -->
+            <div class="lg:col-span-1">
+              <div
+                class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 space-y-6 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200"
+              >
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-semibold">DeFi Dashboard</h3>
+                  <a
+                    href="#"
+                    class="text-xs border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100"
+                    >Visit Dashboard</a
+                  >
+                </div>
+                <div>
+                  <div
+                    class="flex justify-end items-center mb-4 space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                  >
+                    <button
+                      class="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      class="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                    <button
+                      class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                    >
+                      7D
+                    </button>
+                    <button
+                      class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                    >
+                      30D
+                    </button>
+                  </div>
+                  <div id="defi-chart" style="width: 100%; height: 200px"></div>
+                </div>
+                <div>
+                  <h4 class="text-md font-semibold mb-3">
+                    Top Defi Protocols by Volume
+                  </h4>
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="text-left text-xs text-gray-500 border-b">
+                          <th class="py-2 font-medium">Protocol</th>
+                          <th class="py-2 font-medium">Volume 24H</th>
+                          <th class="py-2 font-medium">TVL</th>
+                        </tr>
+                      </thead>
+                      <tbody id="defi-protocols-body">
+                        <!-- DeFi protocol rows will be injected here by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="text-center mt-4">
+                    <a href="#" class="text-blue-600 font-semibold text-sm"
+                      >VISIT DEFI DASHBOARD →</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="space-y-6">
+            <!-- TPS Chart -->
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+              <div
+                class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
+              >
+                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                  Daily Transactions
+                </h3>
+                <div
+                  class="flex items-center space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                >
+                  <button
+                    class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                  >
+                    1M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    3M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    All
+                  </button>
+                </div>
+              </div>
+              <div id="tps-chart" style="width: 100%; height: 250px"></div>
+            </div>
+            <!-- Ping Time Chart -->
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+              <div
+                class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
+              >
+                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                  Unique Active Addresses
+                </h3>
+                <div
+                  class="flex items-center space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                >
+                  <button
+                    class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                  >
+                    1M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    3M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    All
+                  </button>
+                </div>
+              </div>
+              <div id="ping-chart" style="width: 100%; height: 250px"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Cookie Consent -->
+      <div
+        id="cookie-consent"
+        class="fixed bottom-4 right-4 max-w-sm bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg shadow-lg dark:shadow-xl p-4 z-50 transition-all duration-200"
+      >
+        <div class="flex items-start space-x-3">
+          <div class="flex-shrink-0 text-gray-400 mt-0.5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm text-gray-600">
+              This website uses cookies to improve your experience. By
+              continuing to use this website, you agree to its
+              <a href="#" class="text-blue-600 hover:underline">Terms</a> and
+              <a href="#" class="text-blue-600 hover:underline"
+                >Privacy Policy</a
+              >.
+            </p>
+            <button
+              id="cookie-accept-btn"
+              class="mt-3 w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // --- DATA ---
+        const markets = [
+          { id: 1, name: "WETH-USDC", pair: "#1" },
+          { id: 2, name: "ARB-WETH", pair: "#2" },
+          { id: 3, name: "GMX-WETH", pair: "#3" },
+          { id: 4, name: "WETH-USDT", pair: "#4" },
+          { id: 5, name: "MAGIC-WETH", pair: "#5" },
+          { id: 6, name: "RDNT-WETH", pair: "#6" },
+          { id: 7, name: "WETH-DAI", pair: "#7" },
+          { id: 8, name: "GNS-WETH", pair: "#8" },
+          { id: 9, name: "LINK-WETH", pair: "#9" },
+          { id: 10, name: "DPX-WETH", pair: "#10" },
+        ];
+        const transactions = [
+          {
+            signature: "0x3a2f...",
+            time: "15 secs ago",
+            block: "23849102",
+            instruction: { name: "Swap", type: "swap", count: "1+" },
+          },
+          {
+            signature: "0x1b8c...",
+            time: "16 secs ago",
+            block: "23849101",
+            instruction: { name: "Execute", type: "other" },
+          },
+          {
+            signature: "0x9d5e...",
+            time: "18 secs ago",
+            block: "23849101",
+            instruction: { name: "Execute", type: "other" },
+          },
+          {
+            signature: "0x8f1a...",
+            time: "20 secs ago",
+            block: "23849100",
+            instruction: { name: "Swap", type: "swap", count: "1+" },
+          },
+          {
+            signature: "0x2c7d...",
+            time: "21 secs ago",
+            block: "23849100",
+            instruction: { name: "Transfer", type: "other", count: "x6" },
+          },
+          {
+            signature: "0x5e4b...",
+            time: "22 secs ago",
+            block: "23849099",
+            instruction: { name: "Transfer", type: "other", count: "5+" },
+          },
+        ];
+        const tokens = [
+          {
+            name: "Wrapped Ether",
+            symbol: "WETH",
+            price: "$3,450.12",
+            change: 1.2,
+            marketCap: "$11,215,670,123",
+          },
+          {
+            name: "Arbitrum",
+            symbol: "ARB",
+            price: "$0.84",
+            change: -2.5,
+            marketCap: "$1,071,000,000",
+          },
+          {
+            name: "GMX",
+            symbol: "GMX",
+            price: "$38.50",
+            change: 3.1,
+            marketCap: "$367,250,000",
+          },
+          {
+            name: "Chainlink",
+            symbol: "LINK",
+            price: "$14.20",
+            change: 0.8,
+            marketCap: "$8,378,000,000",
+          },
+          {
+            name: "Uniswap",
+            symbol: "UNI",
+            price: "$7.50",
+            change: 1.5,
+            marketCap: "$4,500,000,000",
+          },
+        ];
+        const defiProtocols = [
+          {
+            name: "GMX",
+            volume: "$1.2B",
+            volumeChange: 15.2,
+            tvl: "$480M",
+            tvlChange: 1.5,
+          },
+          {
+            name: "Uniswap V3",
+            volume: "$980M",
+            volumeChange: 25.1,
+            tvl: "$350M",
+            tvlChange: 2.1,
+          },
+          {
+            name: "Camelot",
+            volume: "$450M",
+            volumeChange: -5.8,
+            tvl: "$120M",
+            tvlChange: -0.5,
+          },
+          {
+            name: "Aave V3",
+            volume: "$310M",
+            volumeChange: 8.3,
+            tvl: "$280B",
+            tvlChange: 0.8,
+          },
+          {
+            name: "Radiant Capital",
+            volume: "$220M",
+            volumeChange: 12.7,
+            tvl: "$150M",
+            tvlChange: 3.2,
+          },
+        ];
+        const defiChartData = [
+          { name: "21/10", val1: 7, val2: 2, val3: 1, val4: 0.5 },
+          { name: "22/10", val1: 8, val2: 1.5, val3: 1.2, val4: 0.8 },
+          { name: "23/10", val1: 7.5, val2: 2.5, val3: 0.8, val4: 0.6 },
+          { name: "24/10", val1: 9, val2: 2, val3: 1.5, val4: 1 },
+          { name: "25/10", val1: 6, val2: 1.8, val3: 1, val4: 0.4 },
+          { name: "26/10", val1: 7, val2: 2.2, val3: 1.3, val4: 0.7 },
+          { name: "27/10", val1: 8, val2: 2, val3: 1.8, val4: 0.9 },
+        ];
+        const tpsChartData = [
+          { name: "09-01", transactions: 950000 },
+          { name: "09-02", transactions: 980000 },
+          { name: "09-03", transactions: 920000 },
+          { name: "09-04", transactions: 1100000 },
+          { name: "09-05", transactions: 1050000 },
+          { name: "09-06", transactions: 1200000 },
+          { name: "09-07", transactions: 1150000 },
+          { name: "09-08", transactions: 1300000 },
+          { name: "09-09", transactions: 1250000 },
+          { name: "09-10", transactions: 1400000 },
+        ];
+        const pingTimeData = tpsChartData.map((item) => ({
+          name: item.name,
+          addresses: Math.floor(item.transactions / 10) + 20000,
+        }));
+
+        // --- ICONS ---
+        const ArrowUpIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path></svg>`;
+        const ArrowDownIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>`;
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderTopMarkets() {
+          const container = document.querySelector(".animate-marquee");
+          const marketItems = [...markets, ...markets];
+          container.innerHTML = marketItems
+            .map(
+              (market) => `
+                <div class="flex items-center text-xs flex-shrink-0">
+                    <span class="font-semibold text-gray-500 mr-2">${market.pair}</span>
+                    <span class="text-blue-600 font-medium">${market.name}</span>
+                </div>
+            `
+            )
+            .join("");
+        }
+
+        function renderTransactions() {
+          const tbody = document.getElementById("transactions-body");
+          tbody.innerHTML = transactions
+            .map(
+              (tx) => `
+                <tr class="border-b text-sm hover:bg-gray-50">
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <span class="text-blue-600 truncate max-w-[150px]">${
+                              tx.signature
+                            }</span>
+                            <button class="ml-2 text-gray-400 hover:text-gray-600">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-3 text-gray-500">${tx.time}</td>
+                    <td class="py-3 text-blue-600">${tx.block}</td>
+                    <td class="py-3">
+                        <span class="text-xs px-2 py-1 rounded-md ${
+                          tx.instruction.type === "swap"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }">
+                            ${tx.instruction.name}
+                        </span>
+                        ${
+                          tx.instruction.count
+                            ? `<span class="ml-1 text-xs border border-gray-300 rounded px-1.5 py-0.5">${tx.instruction.count}</span>`
+                            : ""
+                        }
+                    </td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        function renderTokens() {
+          const tbody = document.getElementById("tokens-body");
+          tbody.innerHTML = tokens
+            .map(
+              (token) => `
+                <tr class="border-b text-sm hover:bg-gray-50">
+                    <td class="py-4">
+                        <div class="flex items-center">
+                            <div class="w-6 h-6 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-blue-600 font-bold text-xs">${
+                              token.symbol[0]
+                            }</div>
+                            <span class="font-medium">${token.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 text-gray-500">${token.symbol}</td>
+                    <td class="py-4">
+                        <div class="flex items-center">
+                            <span>${token.price}</span>
+                            <span class="ml-2 text-xs flex items-center ${
+                              token.change > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  token.change > 0 ? ArrowUpIcon : ArrowDownIcon
+                                }
+                                ${Math.abs(token.change)}%
+                            </span>
+                        </div>
+                    </td>
+                    <td class="py-4">${token.marketCap}</td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        function renderDefiProtocols() {
+          const tbody = document.getElementById("defi-protocols-body");
+          tbody.innerHTML = defiProtocols
+            .map(
+              (p) => `
+                <tr class="text-sm hover:bg-gray-50">
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-gray-200 mr-2"></div>
+                            <span class="font-medium">${p.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <span>${p.volume}</span>
+                            <span class="ml-2 text-xs flex items-center ${
+                              p.volumeChange > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  p.volumeChange > 0
+                                    ? ArrowUpIcon
+                                    : ArrowDownIcon
+                                } ${Math.abs(p.volumeChange)}%
+                            </span>
+                        </div>
+                    </td>
+                     <td class="py-3">
+                        <div class="flex items-center">
+                            <span>${p.tvl}</span>
+                            ${
+                              p.tvlChange !== 0
+                                ? `
+                            <span class="ml-2 text-xs flex items-center ${
+                              p.tvlChange > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  p.tvlChange > 0 ? ArrowUpIcon : ArrowDownIcon
+                                } ${Math.abs(p.tvlChange)}%
+                            </span>`
+                                : ""
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        // --- CHARTS (Using React & Recharts CDN) ---
+        const {
+          BarChart,
+          Bar,
+          XAxis,
+          YAxis,
+          Tooltip,
+          ResponsiveContainer,
+          CartesianGrid,
+          AreaChart,
+          Area,
+        } = Recharts;
+        const e = React.createElement;
+
+        function renderDefiChart() {
+          const container = document.getElementById("defi-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              BarChart,
+              {
+                data: defiChartData,
+                margin: { top: 5, right: 0, left: -25, bottom: 5 },
+              },
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tickFormatter: (value) => `${value}B`,
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+              }),
+              e(Bar, { dataKey: "val1", stackId: "a", fill: "#60a5fa" }),
+              e(Bar, { dataKey: "val2", stackId: "a", fill: "#93c5fd" }),
+              e(Bar, { dataKey: "val3", stackId: "a", fill: "#bfdbfe" }),
+              e(Bar, {
+                dataKey: "val4",
+                stackId: "a",
+                fill: "#f87171",
+                radius: [4, 4, 0, 0],
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        function renderTPSChart() {
+          const container = document.getElementById("tps-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              AreaChart,
+              {
+                data: tpsChartData,
+                margin: { top: 5, right: 0, left: -20, bottom: 5 },
+              },
+              e(CartesianGrid, {
+                strokeDasharray: "3 3",
+                vertical: false,
+                stroke: "#e5e7eb",
+              }),
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+                tickFormatter: (value) => `${value / 1000000}M`,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+                formatter: (value) => value.toLocaleString(),
+              }),
+              e(Area, {
+                type: "monotone",
+                dataKey: "transactions",
+                stroke: "#3b82f6",
+                fill: "#bfdbfe",
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        function renderPingChart() {
+          const container = document.getElementById("ping-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              AreaChart,
+              {
+                data: pingTimeData,
+                margin: { top: 5, right: 0, left: -20, bottom: 5 },
+              },
+              e(CartesianGrid, {
+                strokeDasharray: "3 3",
+                vertical: false,
+                stroke: "#e5e7eb",
+              }),
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+                tickFormatter: (value) => `${Math.round(value / 1000)}k`,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+                formatter: (value) => value.toLocaleString(),
+              }),
+              e(Area, {
+                type: "monotone",
+                dataKey: "addresses",
+                stroke: "#f05128",
+                fill: "#fca5a5",
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        // --- EVENT LISTENERS ---
+        document
+          .getElementById("cookie-accept-btn")
+          .addEventListener("click", function () {
+            document.getElementById("cookie-consent").style.display = "none";
+          });
+
+        const menuButton = document.getElementById("mobile-menu-button");
+        const menu = document.getElementById("mobile-menu");
+        const openIcon = document.getElementById("menu-open-icon");
+        const closeIcon = document.getElementById("menu-close-icon");
+        const mobileMenuLinks = document.querySelectorAll("#mobile-menu a");
+
+        function toggleMenu() {
+          menu.classList.toggle("is-open");
+          openIcon.classList.toggle("hidden");
+          closeIcon.classList.toggle("hidden");
+        }
+
+        menuButton.addEventListener("click", toggleMenu);
+
+        mobileMenuLinks.forEach((link) => {
+          link.addEventListener("click", () => {
+            if (menu.classList.contains("is-open")) {
+              toggleMenu();
+            }
+          });
+        });
+
+        // --- INITIALIZE APP ---
+        renderTopMarkets();
+        renderTransactions();
+        renderTokens();
+        renderDefiProtocols();
+        renderDefiChart();
+        renderTPSChart();
+        renderPingChart();
+      });
+    </script>
+  </body>
+=======
+<!DOCTYPE html>
+<html lang="en" class="transition-colors duration-200">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arbiscan Clone</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- React & Recharts for Charts -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+
+    <script>
+      // Tailwind CSS Configuration
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            keyframes: {
+              marquee: {
+                "0%": { transform: "translateX(0%)" },
+                "100%": { transform: "translateX(-50%)" },
+              },
+            },
+            animation: {
+              marquee: "marquee 30s linear infinite",
+            },
+            colors: {
+              arbitrum: {
+                blue: "#28a0f0",
+                "blue-dark": "#145f8f",
+                red: "#f05128",
+              },
+            },
+            backgroundColor: {
+              dark: {
+                primary: '#0f172a',    // Darker blue-gray
+                secondary: '#1e293b',  // Dark blue-gray
+                card: '#1e293b',       // Card background
+                hover: '#334155',      // Lighter for hover
+                accent: '#3b82f6'      // Accent color
+              }
+            },
+            textColor: {
+              dark: {
+                primary: '#e2e8f0',
+                secondary: '#94a3b8',
+                accent: '#60a5fa',
+                muted: '#64748b',
+                heading: '#f8fafc'
+              }
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/css">
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      /* Utility to hide scrollbars */
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      /* Mobile Menu Animation */
+      #mobile-menu {
+        transition: all 0.3s ease-in-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none; /* Prevent interaction when hidden */
+      }
+      #mobile-menu.is-open {
+        max-height: 300px; /* Adjust based on your content */
+        opacity: 1;
+        pointer-events: auto; /* Allow interaction when visible */
+      }
+    </style>
+    
+    <!-- Theme Management Script -->
+    <script>
+      function initializeTheme() {
+        // Set initial theme based on localStorage or system preference
+        if (localStorage.getItem('color-theme') === 'dark' || 
+            (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      // Initialize theme immediately to prevent flash
+      initializeTheme();
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+
+        function updateThemeIcon(isDark) {
+          // Update icons
+          themeToggleLightIcon.classList.toggle('hidden', !isDark);
+          themeToggleDarkIcon.classList.toggle('hidden', isDark);
+          
+          // Update button aria-label
+          themeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+
+        function setTheme(isDark) {
+          // Update classes
+          document.documentElement.classList.toggle('dark', isDark);
+          
+          // Store preference
+          localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+          
+          // Update UI
+          updateThemeIcon(isDark);
+        }
+
+        // Set initial icon state
+        updateThemeIcon(document.documentElement.classList.contains('dark'));
+
+        // Handle click events
+        themeToggleBtn.addEventListener('click', function() {
+          const willBeDark = !document.documentElement.classList.contains('dark');
+          setTheme(willBeDark);
+        });
+
+        // Handle system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+          if (!localStorage.getItem('color-theme')) {
+            setTheme(e.matches);
+          }
+        });
+
+        // Make button visible after initialization
+        themeToggleBtn.classList.remove('opacity-0');
+      });
+    </script>
+  </head>
+  <body class="bg-gray-50 dark:bg-dark-primary text-sm text-gray-800 dark:text-dark-primary transition-colors duration-200">
+    <div id="app">
+      <!-- Header -->
+      <header
+        class="bg-white dark:bg-dark-secondary border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 relative"
+      >
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            <div class="flex items-center space-x-8">
+              <div class="flex-shrink-0">
+                <span
+                  class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-400 dark:to-blue-600"
+                >
+                  ARBISCAN
+                </span>
+              </div>
+              <div
+                class="hidden md:flex items-center bg-gray-100 dark:bg-dark-secondary rounded-md p-1 text-xs"
+              >
+                <span class="text-blue-600 dark:text-blue-400 font-semibold px-2">ETH</span>
+                <span class="dark:text-dark-primary">$3,450.12</span>
+                <span class="text-gray-400 dark:text-dark-muted mx-2">|</span>
+                <span class="dark:text-dark-primary">Avg Fee (Gwei): 2.5</span>
+              </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+              <nav id="desktop-nav" class="flex space-x-6">
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Analytics
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >DeFi
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors">Leaderboard</a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Blockchain
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+                <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors"
+                  >Resources
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+              </nav>
+              <div class="flex items-center space-x-4">
+                <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+                <a
+                  href="#"
+                  class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover text-gray-700 dark:text-dark-primary transition-colors"
+                >
+                  <span role="img" aria-label="language">🇺🇸</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    ></path>
+                  </svg>
+                </a>
+
+                <button 
+                  id="theme-toggle" 
+                  class="opacity-0 transition-all duration-300 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-500 dark:text-gray-400"
+                  aria-label="Toggle dark mode"
+                  title="Toggle dark mode"
+                >
+                  <!-- Sun icon -->
+                  <svg
+                    id="theme-toggle-light-icon"
+                    class="w-6 h-6 hidden transition-transform duration-200 rotate-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                    ></path>
+                  </svg>
+                  <!-- Moon icon -->
+                  <svg
+                    id="theme-toggle-dark-icon"
+                    class="w-6 h-6 hidden transition-transform duration-200 rotate-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+              <button
+                id="mobile-menu-button"
+                class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-700 dark:text-dark-primary"
+                aria-label="Toggle menu"
+                aria-expanded="false"
+                aria-controls="mobile-menu"
+              >
+                <svg
+                  id="menu-open-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16m-7 6h7"
+                  ></path>
+                </svg>
+                <svg
+                  id="menu-close-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-6 h-6 hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div
+          id="mobile-menu"
+          class="absolute left-0 w-full bg-white dark:bg-dark-secondary shadow-lg dark:shadow-xl md:hidden z-40 border-t border-gray-200 dark:border-gray-700"
+          aria-hidden="true"
+        >
+          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Analytics</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >DeFi</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Leaderboard</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Blockchain</a
+            >
+            <a
+              href="#"
+              class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors"
+              >Resources</a
+            >
+          </div>
+        </div>
+      </header>
+
+      <script>
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+          const menuButton = document.getElementById('mobile-menu-button');
+          const mobileMenu = document.getElementById('mobile-menu');
+          const menuOpenIcon = document.getElementById('menu-open-icon');
+          const menuCloseIcon = document.getElementById('menu-close-icon');
+
+          function toggleMenu() {
+            const isOpen = mobileMenu.classList.contains('is-open');
+            
+            // Toggle menu state
+            mobileMenu.classList.toggle('is-open');
+            
+            // Toggle icons
+            menuOpenIcon.classList.toggle('hidden', !isOpen);
+            menuCloseIcon.classList.toggle('hidden', isOpen);
+            
+            // Add aria-expanded attribute for accessibility
+            menuButton.setAttribute('aria-expanded', !isOpen);
+          }
+
+          // Toggle menu on button click
+          menuButton.addEventListener('click', toggleMenu);
+
+          // Close menu on click outside
+          document.addEventListener('click', function(event) {
+            const isClickInside = menuButton.contains(event.target) || mobileMenu.contains(event.target);
+            if (!isClickInside && mobileMenu.classList.contains('is-open')) {
+              toggleMenu();
+            }
+          });
+
+          // Close menu on escape key
+          document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && mobileMenu.classList.contains('is-open')) {
+              toggleMenu();
+            }
+          });
+        });
+      </script>
+
+      <!-- Main Content -->
+      <main class="p-4 md:p-6 lg:p-8 dark:bg-dark-primary transition-colors">
+        <div class="max-w-screen-2xl mx-auto space-y-6">
+          <!-- Hero Section -->
+          <section
+            class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg p-6 md:p-10 text-white text-center mb-4"
+          >
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">
+              Explore Arbitrum L2 Blockchain
+            </h1>
+            <form id="search-form" class="max-w-2xl mx-auto relative" onsubmit="handleSearch(event)">
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Search transactions, blocks, programs and tokens"
+                class="w-full p-3 pl-10 pr-12 rounded-md text-gray-800 dark:text-gray-900 bg-white dark:bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 border border-gray-200"
+                autocomplete="off"
+                minlength="4"
+                required
+              />
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div id="search-spinner" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
+                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              </div>
+            </form>
+            
+            <!-- Search Results -->
+            <div id="search-results" class="hidden mt-4 bg-white dark:bg-dark-secondary rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20 text-left border border-gray-200 dark:border-gray-700">
+              <div class="p-4">
+                <div id="search-message" class="text-gray-600 dark:text-dark-secondary text-sm"></div>
+                <div id="search-items" class="mt-2 space-y-2"></div>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-blue-200">
+              Sponsored: GMX - Trade BTC, ETH, and other top cryptocurrencies
+              with up to 50x leverage directly from your wallet.
+            </p>
+          </section>
+
+          <!-- Search Functionality -->
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const searchForm = document.getElementById('search-form');
+              const searchInput = document.getElementById('search-input');
+              const searchSpinner = document.getElementById('search-spinner');
+              const searchResults = document.getElementById('search-results');
+              const searchMessage = document.getElementById('search-message');
+              const searchItems = document.getElementById('search-items');
+              
+              let searchTimeout;
+              let isSearching = false;
+
+              // Handle search input with debounce
+              searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+                
+                if (query.length < 4) {
+                  searchResults.classList.add('hidden');
+                  return;
+                }
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => performSearch(query), 500);
+              });
+
+              // Handle search form submission
+              async function handleSearch(e) {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query.length >= 4) {
+                  await performSearch(query);
+                }
+              }
+              window.handleSearch = handleSearch;
+
+              // Perform the search
+              async function performSearch(query) {
+                if (isSearching) return;
+                
+                try {
+                  isSearching = true;
+                  searchSpinner.classList.remove('hidden');
+                  searchResults.classList.remove('hidden');
+                  searchMessage.textContent = 'Searching...';
+                  searchItems.innerHTML = '';
+
+                  // Simulated API call - replace with your actual API endpoint
+                  const response = await simulateSearch(query);
+                  
+                  if (response.items.length > 0) {
+                    searchMessage.textContent = `Found ${response.items.length} results:`;
+                    response.items.forEach(item => {
+                      const element = createSearchResultElement(item);
+                      searchItems.appendChild(element);
+                    });
+                  } else {
+                    searchMessage.textContent = 'No results found';
+                  }
+                } catch (error) {
+                  searchMessage.textContent = 'Error performing search. Please try again.';
+                  console.error('Search error:', error);
+                } finally {
+                  isSearching = false;
+                  searchSpinner.classList.add('hidden');
+                }
+              }
+
+              // Simulate search API call (replace with actual API implementation)
+              function simulateSearch(query) {
+                return new Promise((resolve) => {
+                  setTimeout(() => {
+                    // Mock response - replace with actual API call
+                    resolve({
+                      items: [
+                        {
+                          type: 'transaction',
+                          hash: '0x' + Math.random().toString(16).slice(2, 42),
+                          timestamp: new Date().toISOString()
+                        },
+                        {
+                          type: 'block',
+                          number: Math.floor(Math.random() * 1000000),
+                          timestamp: new Date().toISOString()
+                        }
+                      ]
+                    });
+                  }, 1000);
+                });
+              }
+
+              // Create search result element
+              function createSearchResultElement(item) {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-gray-50 dark:hover:bg-dark-hover rounded-md cursor-pointer border border-gray-100 dark:border-gray-700 transition-colors';
+                
+                let content = '';
+                if (item.type === 'transaction') {
+                  content = `
+                    <div class="flex items-center">
+                      <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">TX</span>
+                      <span class="ml-2 text-sm font-medium text-gray-900 dark:text-dark-primary">${item.hash}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-dark-secondary">${new Date(item.timestamp).toLocaleString()}</div>
+                  `;
+                } else if (item.type === 'block') {
+                  content = `
+                    <div class="flex items-center">
+                      <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">Block</span>
+                      <span class="ml-2 text-sm font-medium text-gray-900 dark:text-dark-primary">#${item.number}</span>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-dark-secondary">${new Date(item.timestamp).toLocaleString()}</div>
+                  `;
+                }
+                
+                div.innerHTML = content;
+                div.addEventListener('click', () => {
+                  // Handle click - implement navigation to detail page
+                  console.log('Clicked:', item);
+                });
+                
+                return div;
+              }
+
+              // Close search results when clicking outside
+              document.addEventListener('click', function(e) {
+                if (!searchForm.contains(e.target)) {
+                  searchResults.classList.add('hidden');
+                }
+              });
+
+              // Handle escape key
+              document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                  searchResults.classList.add('hidden');
+                  searchInput.blur();
+                }
+              });
+            });
+          </script>
+
+          <!-- Top Markets -->
+          <div class="bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2 mb-6 shadow-sm dark:shadow-xl dark:shadow-black/10">
+            <div
+              class="flex items-center overflow-x-auto whitespace-nowrap scrollbar-hide"
+            >
+              <span
+                class="font-semibold text-xs px-3 py-1 bg-gray-100 dark:bg-dark-hover text-gray-800 dark:text-dark-primary rounded-md mr-4 flex-shrink-0"
+                >⭐ Top Markets</span
+              >
+              <div class="flex items-center space-x-6 animate-marquee">
+                <!-- Market items will be injected here by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Market Cap (USD)</h3>
+                <div class="text-2xl font-semibold mb-6">$1.07B</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>Circulating Supply (ARB)</span>
+                    <span>1,275,000,000</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Total Supply (ARB)</span>
+                    <span>10,000,000,000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">L1 Batch</h3>
+                <div class="text-2xl font-semibold mb-6">350718</div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                  <div
+                    class="bg-blue-500 h-1.5 rounded-full"
+                    style="width: 75%"
+                  ></div>
+                </div>
+                <div class="text-right text-gray-500 text-xs mb-6">75%</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>L2 Block</span><span>23849102</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Time Since</span><span>2m 15s ago</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Network (Transactions)</h3>
+                <div class="text-2xl font-semibold mb-6">337,203,194</div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  <div>
+                    <div class="text-gray-500">L2 Block Height</div>
+                    <div>23849102</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500">Unique Addresses</div>
+                    <div>5,102,349</div>
+                  </div>
+                  <div class="bg-blue-50 text-blue-600 p-2 rounded-md">
+                    <div class="text-gray-500">TPS</div>
+                    <div class="font-semibold">8.5</div>
+                  </div>
+                  <div class="flex items-center">
+                    <div>
+                      <div class="text-gray-500 flex items-center">
+                        Gas Price (Gwei)
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="w-4 h-4 ml-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          ></path>
+                        </svg>
+                      </div>
+                      <div>0.12</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 flex flex-col justify-between shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200"
+            >
+              <div>
+                <h3 class="text-gray-500 dark:text-gray-400 mb-4">Total Value Locked (USD)</h3>
+                <div class="text-2xl font-semibold mb-6">$1.71B</div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span>Bridge TVL</span><span>$1.52B (88.8%)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Native TVL</span><span>$190M (11.2%)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <a href="#" class="text-blue-600 font-semibold text-sm"
+                  >DeFi Dashboard →</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Content Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Latest Transactions -->
+              <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-semibold">Latest Transactions</h3>
+                  <button
+                    class="text-xs border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100"
+                  >
+                    Customize
+                  </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full min-w-[600px]">
+                    <thead>
+                      <tr class="text-left text-xs text-gray-500 border-b">
+                        <th class="py-2 font-medium flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-4 h-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                          </svg>
+                          Txn Hash
+                        </th>
+                        <th class="py-2 font-medium flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="w-4 h-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            ></path>
+                          </svg>
+                          Time
+                        </th>
+                        <th class="py-2 font-medium">Block</th>
+                        <th class="py-2 font-medium">Method</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactions-body">
+                      <!-- Transaction rows will be injected here by JS -->
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center mt-4">
+                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                    >VIEW ALL TRANSACTIONS →</a
+                  >
+                </div>
+              </div>
+              <!-- Token Dashboard -->
+              <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-lg font-semibold">Token Dashboard</h3>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full min-w-[600px]">
+                    <thead>
+                      <tr class="text-left text-xs text-gray-500 border-b">
+                        <th class="py-2 font-medium">Token</th>
+                        <th class="py-2 font-medium">Symbol</th>
+                        <th class="py-2 font-medium">Price</th>
+                        <th class="py-2 font-medium">Market Cap (F.D)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tokens-body">
+                      <!-- Token rows will be injected here by JS -->
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-center mt-4">
+                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                    >VISIT TOKEN DASHBOARD →</a
+                  >
+                </div>
+              </div>
+            </div>
+            <!-- DeFi Dashboard -->
+            <div class="lg:col-span-1">
+              <div
+                class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 space-y-6 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200"
+              >
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-semibold">DeFi Dashboard</h3>
+                  <a
+                    href="#"
+                    class="text-xs border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100"
+                    >Visit Dashboard</a
+                  >
+                </div>
+                <div>
+                  <div
+                    class="flex justify-end items-center mb-4 space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                  >
+                    <button
+                      class="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      class="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        ></path>
+                      </svg>
+                    </button>
+                    <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                    <button
+                      class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                    >
+                      7D
+                    </button>
+                    <button
+                      class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                    >
+                      30D
+                    </button>
+                  </div>
+                  <div id="defi-chart" style="width: 100%; height: 200px"></div>
+                </div>
+                <div>
+                  <h4 class="text-md font-semibold mb-3">
+                    Top Defi Protocols by Volume
+                  </h4>
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="text-left text-xs text-gray-500 border-b">
+                          <th class="py-2 font-medium">Protocol</th>
+                          <th class="py-2 font-medium">Volume 24H</th>
+                          <th class="py-2 font-medium">TVL</th>
+                        </tr>
+                      </thead>
+                      <tbody id="defi-protocols-body">
+                        <!-- DeFi protocol rows will be injected here by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="text-center mt-4">
+                    <a href="#" class="text-blue-600 font-semibold text-sm"
+                      >VISIT DEFI DASHBOARD →</a
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div class="space-y-6">
+            <!-- TPS Chart -->
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+              <div
+                class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
+              >
+                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                  Daily Transactions
+                </h3>
+                <div
+                  class="flex items-center space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                >
+                  <button
+                    class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                  >
+                    1M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    3M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    All
+                  </button>
+                </div>
+              </div>
+              <div id="tps-chart" style="width: 100%; height: 250px"></div>
+            </div>
+            <!-- Ping Time Chart -->
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
+              <div
+                class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
+              >
+                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                  Unique Active Addresses
+                </h3>
+                <div
+                  class="flex items-center space-x-1 p-0.5 bg-gray-100 rounded-md w-min"
+                >
+                  <button
+                    class="px-2 py-1 text-xs rounded-md bg-white shadow-sm"
+                  >
+                    1M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    3M
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs rounded-md text-gray-500 hover:bg-gray-200"
+                  >
+                    All
+                  </button>
+                </div>
+              </div>
+              <div id="ping-chart" style="width: 100%; height: 250px"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Cookie Consent -->
+      <div
+        id="cookie-consent"
+        class="fixed bottom-4 right-4 max-w-sm bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg shadow-lg dark:shadow-xl p-4 z-50 transition-all duration-200"
+      >
+        <div class="flex items-start space-x-3">
+          <div class="flex-shrink-0 text-gray-400 mt-0.5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm text-gray-600">
+              This website uses cookies to improve your experience. By
+              continuing to use this website, you agree to its
+              <a href="#" class="text-blue-600 hover:underline">Terms</a> and
+              <a href="#" class="text-blue-600 hover:underline"
+                >Privacy Policy</a
+              >.
+            </p>
+            <button
+              id="cookie-accept-btn"
+              class="mt-3 w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // --- DATA ---
+        const markets = [
+          { id: 1, name: "WETH-USDC", pair: "#1" },
+          { id: 2, name: "ARB-WETH", pair: "#2" },
+          { id: 3, name: "GMX-WETH", pair: "#3" },
+          { id: 4, name: "WETH-USDT", pair: "#4" },
+          { id: 5, name: "MAGIC-WETH", pair: "#5" },
+          { id: 6, name: "RDNT-WETH", pair: "#6" },
+          { id: 7, name: "WETH-DAI", pair: "#7" },
+          { id: 8, name: "GNS-WETH", pair: "#8" },
+          { id: 9, name: "LINK-WETH", pair: "#9" },
+          { id: 10, name: "DPX-WETH", pair: "#10" },
+        ];
+        const transactions = [
+          {
+            signature: "0x3a2f...",
+            time: "15 secs ago",
+            block: "23849102",
+            instruction: { name: "Swap", type: "swap", count: "1+" },
+          },
+          {
+            signature: "0x1b8c...",
+            time: "16 secs ago",
+            block: "23849101",
+            instruction: { name: "Execute", type: "other" },
+          },
+          {
+            signature: "0x9d5e...",
+            time: "18 secs ago",
+            block: "23849101",
+            instruction: { name: "Execute", type: "other" },
+          },
+          {
+            signature: "0x8f1a...",
+            time: "20 secs ago",
+            block: "23849100",
+            instruction: { name: "Swap", type: "swap", count: "1+" },
+          },
+          {
+            signature: "0x2c7d...",
+            time: "21 secs ago",
+            block: "23849100",
+            instruction: { name: "Transfer", type: "other", count: "x6" },
+          },
+          {
+            signature: "0x5e4b...",
+            time: "22 secs ago",
+            block: "23849099",
+            instruction: { name: "Transfer", type: "other", count: "5+" },
+          },
+        ];
+        const tokens = [
+          {
+            name: "Wrapped Ether",
+            symbol: "WETH",
+            price: "$3,450.12",
+            change: 1.2,
+            marketCap: "$11,215,670,123",
+          },
+          {
+            name: "Arbitrum",
+            symbol: "ARB",
+            price: "$0.84",
+            change: -2.5,
+            marketCap: "$1,071,000,000",
+          },
+          {
+            name: "GMX",
+            symbol: "GMX",
+            price: "$38.50",
+            change: 3.1,
+            marketCap: "$367,250,000",
+          },
+          {
+            name: "Chainlink",
+            symbol: "LINK",
+            price: "$14.20",
+            change: 0.8,
+            marketCap: "$8,378,000,000",
+          },
+          {
+            name: "Uniswap",
+            symbol: "UNI",
+            price: "$7.50",
+            change: 1.5,
+            marketCap: "$4,500,000,000",
+          },
+        ];
+        const defiProtocols = [
+          {
+            name: "GMX",
+            volume: "$1.2B",
+            volumeChange: 15.2,
+            tvl: "$480M",
+            tvlChange: 1.5,
+          },
+          {
+            name: "Uniswap V3",
+            volume: "$980M",
+            volumeChange: 25.1,
+            tvl: "$350M",
+            tvlChange: 2.1,
+          },
+          {
+            name: "Camelot",
+            volume: "$450M",
+            volumeChange: -5.8,
+            tvl: "$120M",
+            tvlChange: -0.5,
+          },
+          {
+            name: "Aave V3",
+            volume: "$310M",
+            volumeChange: 8.3,
+            tvl: "$280B",
+            tvlChange: 0.8,
+          },
+          {
+            name: "Radiant Capital",
+            volume: "$220M",
+            volumeChange: 12.7,
+            tvl: "$150M",
+            tvlChange: 3.2,
+          },
+        ];
+        const defiChartData = [
+          { name: "21/10", val1: 7, val2: 2, val3: 1, val4: 0.5 },
+          { name: "22/10", val1: 8, val2: 1.5, val3: 1.2, val4: 0.8 },
+          { name: "23/10", val1: 7.5, val2: 2.5, val3: 0.8, val4: 0.6 },
+          { name: "24/10", val1: 9, val2: 2, val3: 1.5, val4: 1 },
+          { name: "25/10", val1: 6, val2: 1.8, val3: 1, val4: 0.4 },
+          { name: "26/10", val1: 7, val2: 2.2, val3: 1.3, val4: 0.7 },
+          { name: "27/10", val1: 8, val2: 2, val3: 1.8, val4: 0.9 },
+        ];
+        const tpsChartData = [
+          { name: "09-01", transactions: 950000 },
+          { name: "09-02", transactions: 980000 },
+          { name: "09-03", transactions: 920000 },
+          { name: "09-04", transactions: 1100000 },
+          { name: "09-05", transactions: 1050000 },
+          { name: "09-06", transactions: 1200000 },
+          { name: "09-07", transactions: 1150000 },
+          { name: "09-08", transactions: 1300000 },
+          { name: "09-09", transactions: 1250000 },
+          { name: "09-10", transactions: 1400000 },
+        ];
+        const pingTimeData = tpsChartData.map((item) => ({
+          name: item.name,
+          addresses: Math.floor(item.transactions / 10) + 20000,
+        }));
+
+        // --- ICONS ---
+        const ArrowUpIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path></svg>`;
+        const ArrowDownIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>`;
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderTopMarkets() {
+          const container = document.querySelector(".animate-marquee");
+          const marketItems = [...markets, ...markets];
+          container.innerHTML = marketItems
+            .map(
+              (market) => `
+                <div class="flex items-center text-xs flex-shrink-0">
+                    <span class="font-semibold text-gray-500 mr-2">${market.pair}</span>
+                    <span class="text-blue-600 font-medium">${market.name}</span>
+                </div>
+            `
+            )
+            .join("");
+        }
+
+        function renderTransactions() {
+          const tbody = document.getElementById("transactions-body");
+          tbody.innerHTML = transactions
+            .map(
+              (tx) => `
+                <tr class="border-b text-sm hover:bg-gray-50">
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <span class="text-blue-600 truncate max-w-[150px]">${
+                              tx.signature
+                            }</span>
+                            <button class="ml-2 text-gray-400 hover:text-gray-600">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-3 text-gray-500">${tx.time}</td>
+                    <td class="py-3 text-blue-600">${tx.block}</td>
+                    <td class="py-3">
+                        <span class="text-xs px-2 py-1 rounded-md ${
+                          tx.instruction.type === "swap"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }">
+                            ${tx.instruction.name}
+                        </span>
+                        ${
+                          tx.instruction.count
+                            ? `<span class="ml-1 text-xs border border-gray-300 rounded px-1.5 py-0.5">${tx.instruction.count}</span>`
+                            : ""
+                        }
+                    </td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        function renderTokens() {
+          const tbody = document.getElementById("tokens-body");
+          tbody.innerHTML = tokens
+            .map(
+              (token) => `
+                <tr class="border-b text-sm hover:bg-gray-50">
+                    <td class="py-4">
+                        <div class="flex items-center">
+                            <div class="w-6 h-6 rounded-full bg-gray-200 mr-3 flex items-center justify-center text-blue-600 font-bold text-xs">${
+                              token.symbol[0]
+                            }</div>
+                            <span class="font-medium">${token.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 text-gray-500">${token.symbol}</td>
+                    <td class="py-4">
+                        <div class="flex items-center">
+                            <span>${token.price}</span>
+                            <span class="ml-2 text-xs flex items-center ${
+                              token.change > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  token.change > 0 ? ArrowUpIcon : ArrowDownIcon
+                                }
+                                ${Math.abs(token.change)}%
+                            </span>
+                        </div>
+                    </td>
+                    <td class="py-4">${token.marketCap}</td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        function renderDefiProtocols() {
+          const tbody = document.getElementById("defi-protocols-body");
+          tbody.innerHTML = defiProtocols
+            .map(
+              (p) => `
+                <tr class="text-sm hover:bg-gray-50">
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 rounded-full bg-gray-200 mr-2"></div>
+                            <span class="font-medium">${p.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <span>${p.volume}</span>
+                            <span class="ml-2 text-xs flex items-center ${
+                              p.volumeChange > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  p.volumeChange > 0
+                                    ? ArrowUpIcon
+                                    : ArrowDownIcon
+                                } ${Math.abs(p.volumeChange)}%
+                            </span>
+                        </div>
+                    </td>
+                     <td class="py-3">
+                        <div class="flex items-center">
+                            <span>${p.tvl}</span>
+                            ${
+                              p.tvlChange !== 0
+                                ? `
+                            <span class="ml-2 text-xs flex items-center ${
+                              p.tvlChange > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }">
+                                ${
+                                  p.tvlChange > 0 ? ArrowUpIcon : ArrowDownIcon
+                                } ${Math.abs(p.tvlChange)}%
+                            </span>`
+                                : ""
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `
+            )
+            .join("");
+        }
+
+        // --- CHARTS (Using React & Recharts CDN) ---
+        const {
+          BarChart,
+          Bar,
+          XAxis,
+          YAxis,
+          Tooltip,
+          ResponsiveContainer,
+          CartesianGrid,
+          AreaChart,
+          Area,
+        } = Recharts;
+        const e = React.createElement;
+
+        function renderDefiChart() {
+          const container = document.getElementById("defi-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              BarChart,
+              {
+                data: defiChartData,
+                margin: { top: 5, right: 0, left: -25, bottom: 5 },
+              },
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tickFormatter: (value) => `${value}B`,
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+              }),
+              e(Bar, { dataKey: "val1", stackId: "a", fill: "#60a5fa" }),
+              e(Bar, { dataKey: "val2", stackId: "a", fill: "#93c5fd" }),
+              e(Bar, { dataKey: "val3", stackId: "a", fill: "#bfdbfe" }),
+              e(Bar, {
+                dataKey: "val4",
+                stackId: "a",
+                fill: "#f87171",
+                radius: [4, 4, 0, 0],
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        function renderTPSChart() {
+          const container = document.getElementById("tps-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              AreaChart,
+              {
+                data: tpsChartData,
+                margin: { top: 5, right: 0, left: -20, bottom: 5 },
+              },
+              e(CartesianGrid, {
+                strokeDasharray: "3 3",
+                vertical: false,
+                stroke: "#e5e7eb",
+              }),
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+                tickFormatter: (value) => `${value / 1000000}M`,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+                formatter: (value) => value.toLocaleString(),
+              }),
+              e(Area, {
+                type: "monotone",
+                dataKey: "transactions",
+                stroke: "#3b82f6",
+                fill: "#bfdbfe",
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        function renderPingChart() {
+          const container = document.getElementById("ping-chart");
+          const chart = e(
+            ResponsiveContainer,
+            null,
+            e(
+              AreaChart,
+              {
+                data: pingTimeData,
+                margin: { top: 5, right: 0, left: -20, bottom: 5 },
+              },
+              e(CartesianGrid, {
+                strokeDasharray: "3 3",
+                vertical: false,
+                stroke: "#e5e7eb",
+              }),
+              e(XAxis, {
+                dataKey: "name",
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+              }),
+              e(YAxis, {
+                tick: { fontSize: 12 },
+                stroke: "#9ca3af",
+                axisLine: false,
+                tickLine: false,
+                tickFormatter: (value) => `${Math.round(value / 1000)}k`,
+              }),
+              e(Tooltip, {
+                cursor: { fill: "rgba(239, 246, 255, 0.5)" },
+                contentStyle: {
+                  fontSize: "12px",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.375rem",
+                },
+                formatter: (value) => value.toLocaleString(),
+              }),
+              e(Area, {
+                type: "monotone",
+                dataKey: "addresses",
+                stroke: "#f05128",
+                fill: "#fca5a5",
+              })
+            )
+          );
+          ReactDOM.render(chart, container);
+        }
+
+        // --- EVENT LISTENERS ---
+        document
+          .getElementById("cookie-accept-btn")
+          .addEventListener("click", function () {
+            document.getElementById("cookie-consent").style.display = "none";
+          });
+
+        const menuButton = document.getElementById("mobile-menu-button");
+        const menu = document.getElementById("mobile-menu");
+        const openIcon = document.getElementById("menu-open-icon");
+        const closeIcon = document.getElementById("menu-close-icon");
+        const mobileMenuLinks = document.querySelectorAll("#mobile-menu a");
+
+        function toggleMenu() {
+          menu.classList.toggle("is-open");
+          openIcon.classList.toggle("hidden");
+          closeIcon.classList.toggle("hidden");
+        }
+
+        menuButton.addEventListener("click", toggleMenu);
+
+        mobileMenuLinks.forEach((link) => {
+          link.addEventListener("click", () => {
+            if (menu.classList.contains("is-open")) {
+              toggleMenu();
+            }
+          });
+        });
+
+        // --- INITIALIZE APP ---
+        renderTopMarkets();
+        renderTransactions();
+        renderTokens();
+        renderDefiProtocols();
+        renderDefiChart();
+        renderTPSChart();
+        renderPingChart();
+      });
+    </script>
+  </body>
+>>>>>>> b76049654e7972ae5ecf35f6866e9b2b07f8d5bd
+>>>>>>> abbiecodes-ui
 </html>
