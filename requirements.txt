@@ -1,0 +1,11 @@
+django
+djangorestframework
+django-cors-headers
+dj-database-url
+whitenoise
+drf-yasg
+djangorestframework-simplejwt
+web3
+requests
+djangorestframework-swagger
+gunicorn

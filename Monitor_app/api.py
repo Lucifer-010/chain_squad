@@ -1,76 +1,123 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.views import APIView
 from .models import Contract, Transaction
-from .serializers import ContractSerializer, ContractDetailSerializer, TransactionSerializer
-from . import tasks
+from .serializers import (RPCMonitorSerializer,
+    UserSerializer, RegisterSerializer, CustomTokenObtainPairSerializer
+)
+import requests
+from .serializers import RPCMonitorSerializer
+from .tasks import get_l3_vital_health, to_serializable
+import json
 
-class ContractViewSet(viewsets.ReadOnlyModelViewSet):
+@api_view(['POST'])
+def get_chain_health_analytics(request):
     """
-    API endpoint that allows contracts to be viewed.
-    
-    - The 'list' action provides a summary of all contracts.
-    - The 'retrieve' action provides detailed data for a single contract.
-    - The 'analyze' action allows for on-the-fly analysis of a contract address.
+    API endpoint to fetch health and analytics data for a given L3 chain RPC URL.
+
+    Accepts a POST request with a JSON body containing the 'rpc_url'.
+    Example:
+    {
+        "rpc_url": "https://nova.arbitrum.io/rpc"
+    }
     """
-    queryset = Contract.objects.all()
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # Default permissions
+    # 1. Validate the incoming request data
+    serializer = RPCMonitorSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        For the 'analyze_contract' action, we allow any user.
-        For all other actions, we use the default permissions defined in `permission_classes`.
-        """
-        if self.action == 'analyze_contract':
-            return [permissions.AllowAny()]
-        return super().get_permissions()
+    rpc_url = serializer.validated_data['rpc_url']
 
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return ContractDetailSerializer
-        return ContractSerializer
+    try:
+        # 2. Execute the monitoring logic
+        analytics_data = get_l3_vital_health(rpc_url)
 
-    @action(detail=False, methods=['post'], url_path='analyze')
-    def analyze_contract(self, request):
-        """
-        Analyzes a contract address provided in the POST request body.
-        It fetches the contract data, saves it to the database, and returns
-        the serialized contract details.
-        """
-        contract_address = request.data.get('address')
-        if not contract_address:
-            return Response(
-                {"error": "Contract address is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # 3. Check for errors from the monitoring function
+        if 'error' in analytics_data:
+            # Return a server-side error if the script failed to connect or fetch data
+            return Response(analytics_data, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
+        # 4. Serialize the data to ensure consistent JSON formatting
+        # The to_serializable helper handles complex types like datetime and HexBytes
+        response_data = json.loads(json.dumps(analytics_data, default=to_serializable))
 
-        try:
-            contract_instance = tasks.load_contract_data_from_address(contract_address)
-            serializer = ContractDetailSerializer(contract_instance)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # 5. Return the successful response
+        return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'], url_path='send-telegram-alert', permission_classes=[permissions.AllowAny])
-    def send_telegram_alert(self, request):
-        """
-        Sends a Telegram alert.
-        Expects 'bot_token', 'chat_id', and 'message' in the POST data.
-        """
-        bot_token = request.data.get('bot_token')
-        chat_id = request.data.get('chat_id')
-        message = request.data.get('message')
+    except Exception as e:
+        # Catch any other unexpected errors during execution
+        return Response(
+            {"error": "An unexpected server error occurred.", "details": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
-        if not all([bot_token, chat_id, message]):
-            return Response(
-                {"error": "bot_token, chat_id, and message are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
-        result = tasks.send_telegram_alert(bot_token, chat_id, message)
+class RegisterAPIView(APIView):
+    """
+    API endpoint for user registration.
+    """
+    permission_classes = [permissions.AllowAny]
 
-        if result.get("success"):
-            return Response({"message": "Telegram alert sent successfully."}, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": f"Failed to send Telegram alert: {result.get('error')}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def post(self, request, *args, **kwargs):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            # Optionally, log in the user immediately after registration
+            # For JWT, you'd typically return tokens here.
+            # Using CustomTokenObtainPairSerializer to get tokens
+            token_serializer = CustomTokenObtainPairSerializer(data={
+                'username': user.username,
+                'password': request.data['password']
+            })
+            token_serializer.is_valid(raise_exception=True)
+            return Response({
+                "user": UserSerializer(user).data,
+                "message": "User registered successfully.",
+                **token_serializer.validated_data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserAPIView(APIView):
+    """
+    API endpoint to retrieve the current authenticated user's details.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['POST'])
+def send_telegram_alert_view(request):
+    """
+    Receives bot_token, chat_id, and message from the frontend
+    and forwards the alert to the Telegram API.
+    """
+    bot_token = request.data.get('bot_token')
+    chat_id = request.data.get('chat_id')
+    message = request.data.get('message')
+
+    if not all([bot_token, chat_id, message]):
+        return Response(
+            {"error": "Missing bot_token, chat_id, or message"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    send_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+
+    try:
+        response = requests.post(send_url, json=payload, timeout=15)
+        response.raise_for_status()
+        return Response({"success": True, "response": response.json()}, status=status.HTTP_200_OK)
+    except requests.exceptions.RequestException as e:
+        return Response({"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

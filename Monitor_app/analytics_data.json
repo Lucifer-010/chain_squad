@@ -1,0 +1,288 @@
+{
+    "timestamp_utc": "2025-10-30T11:56:43.785414+00:00",
+    "health_alerts": [
+        "Sequencer ETH balance is critical: 0.1082 ETH. Below threshold of 1.0 ETH."
+    ],
+    "chain_info": {
+        "rpc_url": "https://nova.arbitrum.io/rpc",
+        "chain_id": 42170,
+        "client_version": "nitro/v3.7.4-rc.2-9244576/linux-arm64/go1.24.5"
+    },
+    "node_health": {
+        "syncing": "N/A",
+        "peer_count": "N/A"
+    },
+    "latest_block_analytics": {
+        "block_number": 84234758,
+        "block_hash": "72ed6a01ab9edd12c8240e342a99b1b798d128f9d8ec911f18e8a9a39e4acf32",
+        "block_timestamp_utc": "2025-10-30T11:56:52+00:00",
+        "time_since_block_seconds": -8.214582,
+        "transaction_count": 2,
+        "gas_used": 567541,
+        "gas_limit": 1125899906842624,
+        "gas_used_percentage": "0.00",
+        "base_fee_per_gas_gwei": 0.01,
+        "block_size_bytes": 1004
+    },
+    "sequencer_info": {
+        "address": "0xA4b000000000000000000073657175656e636572",
+        "balance_eth": 0.1081980561,
+        "balance_critical_threshold_eth": 1.0
+    },
+    "historical_performance": {
+        "analysis_block_range": "84234739 - 84234758",
+        "avg_block_time_seconds": "14.10",
+        "avg_txs_per_block": "2.00",
+        "estimated_tps": "0.14",
+        "avg_gas_used_percentage": "0.00",
+        "max_txs_in_block": 2,
+        "min_txs_in_block": 2,
+        "max_gas_used_percentage": "0.00",
+        "min_gas_used_percentage": "0.00",
+        "max_block_size_bytes": 1133,
+        "min_block_size_bytes": 809
+    },
+    "detailed_transactions": [
+        {
+            "hash": "07225694156b8bed7a498962c8528411ef77e36fa6005d95f600deff6d9f6495",
+            "block_number": 84234758,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 567541,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.67541e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "853b8f954c2d9a03cad8b700631c3c75dee74e7a5aa9d02da3e357d6674bfb75",
+            "block_number": 84234758,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "d70bcd8d721d4657a23601a4a2b0dd6473872277f23316fd6c570c254cee81d4",
+            "block_number": 84234757,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 589956,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.89956e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "7ecd7377834b6fc54f9d9f8e62ba4791db0c5567b94f784becd46f7fbc2aade3",
+            "block_number": 84234757,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "6aff0fd67c380b9fec725a3274ec3ba149a99ecd657f16642f43fe5addb7c520",
+            "block_number": 84234756,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 572017,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.72017e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "b61ed964f109026d88d12d789a5d25e48aa63f9d2d4c0bdd2fce9fd9faf1f940",
+            "block_number": 84234756,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "31135aa5aae8371008cb2c181ee5468eae52999a47759d605389e5dd17eeb152",
+            "block_number": 84234755,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 578749,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.78749e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "c370672f36c89e785dadae2c39cba9687175a42b15e53372534ca5b808412d68",
+            "block_number": 84234755,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "894dd69edd836aa0281dc8de8475d0ad8911fd120fd4ae630a9e323e24b65516",
+            "block_number": 84234754,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 578785,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.78785e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "cd3cea3ca434505d08069c1ee96dae1b180a17bdf4ed829697729b312f53c4ca",
+            "block_number": 84234754,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "b61eac4f01280e4508eb3f9df1db0b72289449f63ae7e26394f11e4d584d4914",
+            "block_number": 84234753,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 585492,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.85492e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "cb91443aa1b430a3de886d4d26cbc3239d3892c11b592f524ca9896c62799452",
+            "block_number": 84234753,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "bc5b7bb4f59ab51495b8052649a9dd8387af8e3356a279d689031845bc33a9c7",
+            "block_number": 84234752,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 589980,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.8998e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "db6ef6aaffbfa7ce7d8bf47c39b4b9625a49311e5cc4e989fb2d6e15bb24a297",
+            "block_number": 84234752,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "5399905ad6914f6673f0df6cc9cbd10919fb728f1f630e3894722fc277d002fb",
+            "block_number": 84234751,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 590051,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.90051e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "d6e54ed3944525067e3589fee28c2bc590b1721e06f6a23792a2fde3039bc836",
+            "block_number": 84234751,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "d2370cc9525440acd5051ffaa8f7283b8a482dc8ca7d1d8abad0276a8d2d2d9d",
+            "block_number": 84234750,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 569785,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.69785e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "3bca66c6cf454fd23e51c10e64cbe1525adc9df7e233d8f663bad7ae7b23b156",
+            "block_number": 84234750,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "83191aedb84f86c8c029e41316423ebe3796c0b14ff284dec0b743ed91f933d2",
+            "block_number": 84234749,
+            "from": "0x339d413CCEfD986b1B3647A9cfa9CBbE70A30749",
+            "to": "0xA2532E716E5c7755F567a74D75804D84d409DcDA",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 580993,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 5.80993e-06,
+            "type": "Contract Call"
+        },
+        {
+            "hash": "25c0fac2d9a2304a6c70e0aec3fab73fba183b95ea0d39652cbda970f4804dfc",
+            "block_number": 84234749,
+            "from": "0x00000000000000000000000000000000000A4B05",
+            "to": "0x00000000000000000000000000000000000A4B05",
+            "value_eth": 0.0,
+            "status": "success",
+            "gas_used": 0,
+            "gas_price_gwei": 0.01,
+            "transaction_fee_eth": 0.0,
+            "type": "Contract Call"
+        }
+    ],
+    "overall_status": "ALERT"
+}

@@ -1,35 +1,39 @@
 # tasks.py
-from web3 import Web3
 import json
+import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-import math
+
 import requests
-import logging
+from web3 import Web3
+from web3.exceptions import TransactionNotFound
 
 # --- Configuration ---
-# You can adjust these settings
-# Using a more specific RPC for an Arbitrum Orbit chain is recommended
-# For this example, we'll continue with a public Arbitrum RPC
-RPC_URL = "https://nova.arbitrum.io/rpc"
-CRITICAL_BALANCE_ETH = 1.0  # Alert if sequencer balance drops below this
-BLOCK_PRODUCTION_THRESHOLD_SECONDS = 300 # 5 minutes
+# It is recommended to use a specific RPC for your Arbitrum Orbit chain.
+#RPC_URL = "https://nova.arbitrum.io/rpc"   Default RPC URL
+
+# --- Health Alert Thresholds ---
+CRITICAL_BALANCE_ETH = 1.0  # Alert if sequencer balance drops below this.
+BLOCK_PRODUCTION_THRESHOLD_SECONDS = 300  # 5 minutes. Alert if no new blocks are produced.
+
+# --- Analytics Parameters ---
+NUM_BLOCKS_FOR_AVERAGES = 20 # Number of recent blocks to analyze for historical stats.
+MIN_TRANSACTIONS_TO_FETCH = 20 # The minimum number of recent transactions to retrieve details for.
+MAX_BLOCKS_TO_SCAN_FOR_TXS = 50 # Safety limit to prevent scanning too far back for transactions.
 
 
 # --- Setup Logging ---
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
-try:
-    from hexbytes import HexBytes
-except ImportError:
-    HexBytes = None
-
+# --- Helper Functions ---
 
 def to_serializable(obj):
     """Helper function to convert complex types to JSON serializable formats."""
     if isinstance(obj, Decimal):
         return float(obj)
-    if HexBytes and isinstance(obj, HexBytes):
+    if hasattr(obj, 'hex'): # Handles HexBytes
         return obj.hex()
     if isinstance(obj, bytes):
         return obj.hex()
@@ -39,175 +43,214 @@ def to_serializable(obj):
         return list(obj)
     return str(obj)
 
-def send_telegram_alert(bot_token: str, chat_id: str, message: str):
-    """
-    Sends an alert message to a specified Telegram chat.
-    """
-    if not bot_token or not chat_id:
-        logging.warning("Telegram Bot Token or Chat ID is not configured. Skipping notification.")
-        return {"success": False, "error": "Bot Token or Chat ID not provided."}
-
-    send_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
+def get_transaction_details(w3: Web3, tx_hash) -> dict:
+    """Fetches and processes a single transaction to extract key details and its receipt."""
     try:
-        response = requests.post(send_url, json=payload, timeout=5)
-        response.raise_for_status()
-        return {"success": True, "response": response.json()}
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Failed to send Telegram alert: {e}")
-        return {"success": False, "error": str(e)}
+        tx = w3.eth.get_transaction(tx_hash)
+        receipt = w3.eth.get_transaction_receipt(tx_hash)
+        
+        status = receipt.get("status")
+        gas_used = int(receipt.get("gasUsed", 0))
+        effective_gas_price = int(receipt.get("effectiveGasPrice", tx.get("gasPrice", 0)))
+        tx_fee_wei = gas_used * effective_gas_price
+
+        tx_type = "Simple Transfer"
+        if tx.to is None:
+            tx_type = "Contract Creation"
+        # A simple heuristic: if there's input data beyond the basic '0x', it's likely a contract call.
+        elif tx.input and len(tx.input) > 2:
+            tx_type = "Contract Call"
+        
+        return {
+            "hash": tx.hash.hex(),
+            "block_number": tx.blockNumber,
+            "from": tx["from"],
+            "to": tx.get("to"),
+            "value_eth": float(w3.from_wei(tx.value, "ether")),
+            "status": "success" if status == 1 else "failed",
+            "gas_used": gas_used,
+            "gas_price_gwei": float(w3.from_wei(effective_gas_price, "gwei")),
+            "transaction_fee_eth": float(w3.from_wei(tx_fee_wei, "ether")),
+            "type": tx_type,
+        }
+    except TransactionNotFound:
+        logging.warning(f"Receipt for tx {tx_hash.hex()} not found, skipping.")
+        return None
+    except Exception as e:
+        logging.error(f"Error processing tx {tx_hash.hex()}: {e}")
+        return None
+
 
 def get_l3_vital_health(rpc_url: str):
     """
-    Fetches and analyzes vital health metrics for an L3 chain.
-    """
-    w3 = Web3(Web3.HTTPProvider(rpc_url))
-    if not w3.is_connected():
-        error_msg = f"Failed to connect to RPC {rpc_url}"
-        logging.error(error_msg)
-        return {"error": error_msg}
+    Fetches and analyzes a rich set of health and performance metrics for an L3 chain,
+    structured for analytics and graphing.
 
-    data = {"rpc_url": rpc_url, "health_alerts": []}
+    This function connects to a chain's RPC endpoint and gathers data on:
+    - Core chain and node information.
+    - Sequencer balance and health.
+    - Detailed analytics of the latest block.
+    - Expanded historical performance metrics (e.g., min/max tx counts, gas usage).
+    - At least 20 of the most recent transactions, scanning multiple blocks if needed.
+    """
+    try:
+        w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 60.0}))
+        if not w3.is_connected():
+            raise ConnectionError(f"Failed to connect to RPC endpoint: {rpc_url}")
+    except Exception as e:
+        logging.error(f"RPC connection error: {e}")
+        return {"error": f"RPC connection error: {e}"}
+
+    data = {"timestamp_utc": datetime.now(timezone.utc), "health_alerts": []}
     now = datetime.now(timezone.utc)
 
-    # 1. L3's current block height (to show it's "live")
+    # --- 1. Fetch Latest Block ---
     try:
         latest_block = w3.eth.get_block("latest")
-        data["latest_block_number"] = int(latest_block.number)
-        ts = int(latest_block.timestamp)
-        latest_ts = datetime.fromtimestamp(ts, timezone.utc)
-        data["block_timestamp"] = latest_ts.isoformat()
-        
-        # Health Check: Time since last block
-        time_since_last_block = (now - latest_ts).total_seconds()
-        if time_since_last_block > BLOCK_PRODUCTION_THRESHOLD_SECONDS:
-            data["health_alerts"].append(
-                f"No new blocks in over {BLOCK_PRODUCTION_THRESHOLD_SECONDS / 60:.1f} minutes. Last block was {time_since_last_block:.0f} seconds ago."
-            )
-
     except Exception as e:
         logging.error(f"Could not fetch the latest block: {e}")
         return {"error": "Could not fetch the latest block."}
 
-    # Get client version
-    try:
-        data["client_version"] = w3.client_version
-    except Exception as e:
-        data["client_version"] = "N/A"
-        logging.warning(f"Could not fetch client version: {e}")
+    # --- 2. Core Chain & Node Information ---
+    data["chain_info"] = {
+        "rpc_url": rpc_url,
+        "chain_id": int(w3.eth.chain_id),
+        "client_version": w3.client_version,
+    }
 
-    # 2. The ETH balance of the L3's "Sequencer"
+    # --- 3. Node Health & Sync Status ---
     try:
-        # Heuristic: The 'miner' of recent blocks is often the sequencer.
+        sync_status = w3.eth.syncing
+        if sync_status:
+            current = sync_status.get("currentBlock", 0)
+            highest = sync_status.get("highestBlock", 1)
+            progress = (current / highest * 100) if highest > 0 else 0
+            data["node_health"] = {
+                "syncing": True,
+                "sync_progress_percent": f"{progress:.2f}",
+                "sync_current_block": current,
+                "sync_highest_block": highest,
+            }
+            data["health_alerts"].append(f"Node is syncing: {progress:.2f}% complete.")
+        else:
+            data["node_health"] = {"syncing": False}
+    except Exception as e:
+        data["node_health"] = {"syncing": "N/A"}
+        logging.warning(f"Could not fetch syncing status: {e}")
+    
+    try:
+        data["node_health"]["peer_count"] = w3.net.peer_count
+    except Exception as e:
+        data["node_health"]["peer_count"] = "N/A"
+        logging.warning(f"Could not fetch peer count: {e}")
+
+    # --- 4. Latest Block Analytics ---
+    block_timestamp = datetime.fromtimestamp(int(latest_block.timestamp), timezone.utc)
+    gas_used_percent = (latest_block.gasUsed / latest_block.gasLimit * 100) if latest_block.gasLimit > 0 else 0
+    time_since_last_block = (now - block_timestamp).total_seconds()
+
+    if time_since_last_block > BLOCK_PRODUCTION_THRESHOLD_SECONDS:
+        data["health_alerts"].append(
+            f"No new blocks in over {BLOCK_PRODUCTION_THRESHOLD_SECONDS / 60:.1f} minutes. "
+            f"Last block was {time_since_last_block:.0f} seconds ago."
+        )
+
+    data["latest_block_analytics"] = {
+        "block_number": int(latest_block.number),
+        "block_hash": latest_block.hash.hex(),
+        "block_timestamp_utc": block_timestamp,
+        "time_since_block_seconds": time_since_last_block,
+        "transaction_count": len(latest_block.transactions),
+        "gas_used": int(latest_block.gasUsed),
+        "gas_limit": int(latest_block.gasLimit),
+        "gas_used_percentage": f"{gas_used_percent:.2f}",
+        "base_fee_per_gas_gwei": float(w3.from_wei(latest_block.get("baseFeePerGas", 0), "gwei")),
+        "block_size_bytes": int(latest_block.size),
+    }
+
+    # --- 5. Sequencer Information ---
+    try:
         sequencer_address = latest_block.get("miner")
         if sequencer_address and w3.is_address(sequencer_address):
             balance_wei = w3.eth.get_balance(sequencer_address)
             balance_eth = float(w3.from_wei(balance_wei, "ether"))
-            data["sequencer_address"] = sequencer_address
-            data["sequencer_balance_eth"] = balance_eth
-            
-            # Health Check: Sequencer balance critical point
+            data["sequencer_info"] = {
+                "address": sequencer_address,
+                "balance_eth": balance_eth,
+                "balance_critical_threshold_eth": CRITICAL_BALANCE_ETH
+            }
             if balance_eth < CRITICAL_BALANCE_ETH:
                  data["health_alerts"].append(
-                    f"Sequencer ETH balance is critical: {balance_eth:.4f} ETH. Below threshold of {CRITICAL_BALANCE_ETH} ETH."
+                    f"Sequencer ETH balance is critical: {balance_eth:.4f} ETH. "
+                    f"Below threshold of {CRITICAL_BALANCE_ETH} ETH."
                 )
-        else:
-            data["sequencer_address"] = "Unknown"
-            data["sequencer_balance_eth"] = "N/A"
     except Exception as e:
-        data["sequencer_address"] = "Error"
-        data["sequencer_balance_eth"] = "N/A"
         logging.warning(f"Could not determine sequencer balance: {e}")
+        data["sequencer_info"] = {"address": "Error", "balance_eth": "N/A", "error": str(e)}
 
-    # 3. The timestamp of the last batch posted (to show it's "settling")
+    # --- 6. Historical Performance (Averages & Ranges) ---
     try:
-        # This is a placeholder as it's highly specific to the rollup implementation.
-        # For Arbitrum, this info is not available via a standard public RPC.
-        # One would typically query the L2 (parent chain) for transactions from the batch poster address.
-        data["last_batch_posted_timestamp"] = "N/A (Requires L2 indexing or specific RPC)"
+        if latest_block.number > NUM_BLOCKS_FOR_AVERAGES:
+            # Fetch last N blocks to calculate historical stats
+            recent_blocks = [w3.eth.get_block(latest_block.number - i) for i in range(NUM_BLOCKS_FOR_AVERAGES)]
+            
+            first_block_for_avg = recent_blocks[-1]
+            time_diff = latest_block.timestamp - first_block_for_avg.timestamp
+            avg_block_time = time_diff / NUM_BLOCKS_FOR_AVERAGES
+            
+            tx_counts = [len(b.transactions) for b in recent_blocks]
+            gas_used_percentages = [(b.gasUsed / b.gasLimit * 100) if b.gasLimit > 0 else 0 for b in recent_blocks]
+            block_sizes = [b.size for b in recent_blocks]
+
+            avg_txs_per_block = sum(tx_counts) / len(tx_counts)
+            
+            data["historical_performance"] = {
+                "analysis_block_range": f"{first_block_for_avg.number} - {latest_block.number}",
+                "avg_block_time_seconds": f"{avg_block_time:.2f}",
+                "avg_txs_per_block": f"{avg_txs_per_block:.2f}",
+                "estimated_tps": f"{(avg_txs_per_block / avg_block_time):.2f}" if avg_block_time > 0 else "0.00",
+                "avg_gas_used_percentage": f"{sum(gas_used_percentages) / len(gas_used_percentages):.2f}",
+                "max_txs_in_block": max(tx_counts),
+                "min_txs_in_block": min(tx_counts),
+                "max_gas_used_percentage": f"{max(gas_used_percentages):.2f}",
+                "min_gas_used_percentage": f"{min(gas_used_percentages):.2f}",
+                "max_block_size_bytes": max(block_sizes),
+                "min_block_size_bytes": min(block_sizes),
+            }
+        else:
+            data["historical_performance"] = {"error": "Not enough blocks on-chain to calculate historical stats."}
     except Exception as e:
-        data["last_batch_posted_timestamp"] = "N/A"
+        data["historical_performance"] = {"error": f"Could not calculate historical stats: {e}"}
+        logging.warning(f"Could not calculate historical metrics: {e}")
 
-    # 4. All major vital health metrics
-    data["chain_id"] = int(w3.eth.chain_id)
-    data["gas_limit"] = getattr(latest_block, "gasLimit", "N/A")
-    data["gas_used"] = getattr(latest_block, "gasUsed", "N/A")
-    data["block_hash"] = getattr(latest_block, "hash", b'').hex()
-    data["transaction_count"] = len(getattr(latest_block, "transactions", []))
-    
+    # --- 7. Fetch 20+ Most Recent Detailed Transactions ---
+    detailed_transactions = []
     try:
-        gas_price_wei = int(w3.eth.gas_price)
-        data["network_gas_price_gwei"] = float(w3.from_wei(gas_price_wei, "gwei"))
-    except Exception:
-        data["network_gas_price_gwei"] = "N/A"
-
-    # Get peer count
-    try:
-        data["peer_count"] = w3.net.peer_count
+        current_block_num = latest_block.number
+        blocks_scanned = 0
+        while len(detailed_transactions) < MIN_TRANSACTIONS_TO_FETCH and blocks_scanned < MAX_BLOCKS_TO_SCAN_FOR_TXS:
+            block_to_scan = w3.eth.get_block(current_block_num)
+            # Iterate in reverse to get the most recent transactions first
+            for tx_hash in reversed(block_to_scan.transactions):
+                if len(detailed_transactions) >= MIN_TRANSACTIONS_TO_FETCH:
+                    break
+                tx_details = get_transaction_details(w3, tx_hash)
+                if tx_details:
+                    detailed_transactions.append(tx_details)
+            
+            current_block_num -= 1
+            blocks_scanned += 1
+            if current_block_num < 0:
+                break
+        
+        data["detailed_transactions"] = detailed_transactions
     except Exception as e:
-        data["peer_count"] = "N/A"
-        logging.warning(f"Could not fetch peer count: {e}")
+        data["detailed_transactions"] = {"error": f"Failed to fetch detailed transactions: {e}"}
+        logging.error(f"Failed to fetch detailed transactions: {e}")
 
-    # 5. The 15 recent transactions
-    transactions = []
-    try:
-        block_txs = latest_block.get("transactions", [])
-        for tx_hash in reversed(block_txs[-15:]):
-            tx = w3.eth.get_transaction(tx_hash)
-            transactions.append({
-                "hash": tx.hash.hex(),
-                "from": tx["from"],
-                "to": tx["to"],
-                "value_eth": float(w3.from_wei(tx.value, "ether")),
-                "gas": tx.gas,
-            })
-        data["recent_transactions"] = transactions
-    except Exception as e:
-        data["recent_transactions"] = []
-        logging.warning(f"Could not fetch recent transactions: {e}")
-
-
-    # 6. Chain size (estimation)
-    # Direct chain size from RPC is not possible.
-    # This is a conceptual metric, often measured by the node's database size on disk.
-    data["chain_size_on_disk"] = "N/A (Requires access to the node's filesystem)"
-
-
-    # 7. Gas fee limit, spent gas fee, balance, and balance critical point
-    data["gas_fee_metrics"] = {
-        "gas_limit_per_block": data["gas_limit"],
-        "gas_spent_latest_block": data["gas_used"],
-        "sequencer_balance": data.get("sequencer_balance_eth", "N/A"),
-        "sequencer_balance_critical_point": CRITICAL_BALANCE_ETH
-    }
-
-
-    # Final summary of health status
-    if not data["health_alerts"]:
-        data["overall_status"] = "OK"
-    else:
-        data["overall_status"] = "ALERT"
+    # --- 8. Final Health Status ---
+    data["overall_status"] = "ALERT" if data["health_alerts"] else "OK"
 
     return data
 
 
-if __name__ == "__main__":
-    logging.info(f"Fetching vital health metrics for L3 at {RPC_URL}")
-    
-    analytics_data = get_l3_vital_health(RPC_URL)
-
-    # Save to disk
-    with open("l3_health_data.json", "w") as f:
-        json.dump(analytics_data, f, indent=4, default=to_serializable)
-    
-    print(json.dumps(analytics_data, indent=4, default=to_serializable))
-
-    # Example of how to use the alert system
-    if analytics_data.get("overall_status") == "ALERT":
-        logging.warning("L3 health check detected the following problems:")
-        for alert in analytics_data.get("health_alerts", []):
-            logging.warning(f"- {alert}")

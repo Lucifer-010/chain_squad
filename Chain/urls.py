@@ -22,6 +22,8 @@ from Monitor_app import views,api
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
+    TokenObtainPairView, # Keep this for default, but we'll use a custom one
+    TokenVerifyView,
     TokenRefreshView,
 )   
 from django.conf import settings
@@ -50,8 +52,6 @@ schema_view = get_schema_view(
 )
 
 # Create a router and register our viewsets with it.
-router = DefaultRouter()
-router.register(r'contracts', api.ContractViewSet, basename='contract')
 
 
 urlpatterns = [
@@ -60,9 +60,15 @@ urlpatterns = [
     path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
-
     # The API URLs are now determined automatically by the router.
-    path('api/', include(router.urls)),
+    # Custom authentication endpoints
+    path('api/register/', api.RegisterAPIView.as_view(), name='register'),
+    path('api/login/', TokenObtainPairView.as_view(serializer_class=api.CustomTokenObtainPairSerializer), name='token_obtain_pair'), # Use custom serializer
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/user/', api.UserAPIView.as_view(), name='user_details'),
+    path('api/monitor/', api.get_chain_health_analytics, name='monitor-chain-health'),
+    path('send-telegram-alert/', api.send_telegram_alert_view, name='send-telegram-alert'),
     
 
 

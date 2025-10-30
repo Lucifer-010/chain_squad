@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os,dj_database_url
 from pathlib import Path
+from datetime import timedelta
 import whitenoise
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -44,15 +45,32 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt', # Add simplejwt
     'rest_framework_swagger',
     'corsheaders',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication', # Use JWT for authentication
+        'rest_framework.authentication.SessionAuthentication', # Keep for browsable API
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema', # Already present, but good to confirm
+}
+
+# Simple JWT settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), # Access tokens expire after 60 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Refresh tokens last for 1 day
+    'ROTATE_REFRESH_TOKENS': True,                  # Rotate refresh tokens on use
+    'BLACKLIST_AFTER_ROTATION': True,               # Blacklist old refresh tokens
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -67,6 +85,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Ensure CorsMiddleware is high up
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -168,6 +187,10 @@ STATIC_ROOT =os.path.join(BASE_DIR,"staticfiles")
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR,"media")
 MEDIA_URL = '/media/'
+
+# Security settings
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
