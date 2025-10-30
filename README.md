@@ -52,7 +52,7 @@ This is a modern, lightweight front-end built with a focus on performance and ma
      1.  the code as index.html.
      2. Open the index.html file in any modern web browser.
 
- Code Structure
+ Code Structure:
 The entire application is encapsulated within the index.html file for ultimate portability and simplicity.
 
     1. <head>: This section loads all external dependencies (Tailwind, fonts, and charting libraries) from reliable CDNs. It also contains the initial scripts for theme and language management to ensure the correct state is loaded instantly without any page flicker.
