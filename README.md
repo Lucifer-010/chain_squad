@@ -4,8 +4,14 @@ This repository contains the front-end implementation for Arbiscan, a dedicated 
 
 The goal of this project is to move developers from a state of "hoping it works" to "knowing it works" by providing a single, easy-to-use tool for critical infrastructure monitoring.
 
+
+✨ Key Features
+This UI is built with a focus on functionality, clarity, and user experience.
+
+
 Key Features:
 This UI is built with a focus on functionality, clarity, and user experience.
+
 Core UI & UX
 -Fully Responsive Design: A fluid layout ensures a seamless experience on desktop, tablet, and mobile devices, allowing for monitoring on the go.
 
@@ -17,7 +23,13 @@ Core UI & UX
 
 
 Core Monitoring Components
+
+
 The dashboard is designed to display the vital health metrics required for any production-grade L3 chain. The UI components are wired to display:
+
+
+The dashboard is designed to display the vital health metrics required for any production-grade L3 chain. The UI components are wired to display:
+
 -Key Health Metric Cards: Prominent cards at the top of the dashboard provide immediate insight into:
    1. Chain Uptime and current block number.
    2. Sequencer ETH Balance to monitor gas funds.
@@ -38,7 +50,11 @@ The UI is designed to integrate with a backend alerting system. This allows it t
     1. ETH balance dropping below a set amount.
     2. No new blocks being produced for a specified time period (e.g., 5 minutes).
 
+
+ Technology Stack
+
  Technology Stack:
+
 This is a modern, lightweight front-end built with a focus on performance and maintainability.
 
      1. HTML5: Semantic and accessible markup.
@@ -46,13 +62,21 @@ This is a modern, lightweight front-end built with a focus on performance and ma
      3. JavaScript (Vanilla): Powers all client-side interactivity, theme management, and data rendering.
      4. React & Recharts: Utilized via CDN to render beautiful and interactive data visualization charts without a complex build setup.
 
+
+ Running the UI
+
  Running the UI:
+
  This project is self-contained within a single index.html file, requiring no installation or build steps.
 
      1.  the code as index.html.
      2. Open the index.html file in any modern web browser.
 
+
  Code Structure:
+
+
+
 The entire application is encapsulated within the index.html file for ultimate portability and simplicity.
 
     1. <head>: This section loads all external dependencies (Tailwind, fonts, and charting libraries) from reliable CDNs. It also contains the initial scripts for theme and language management to ensure the correct state is loaded instantly without any page flicker.
