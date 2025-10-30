@@ -14,9 +14,58 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from rest_framework.documentation import include_docs_urls
+from django.urls import include, re_path
 from django.contrib import admin
 from django.urls import path
+from Monitor_app import views,api
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)   
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import re_path
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from django.conf.urls import handler404, handler500, handler403
+
+#handler404 = 'api.views.custom_404'
+#handler500 = 'api.views.custom_500'
+#handler403 = 'api.views.custom_403'
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="CHAIN SQUADAPI",
+      default_version='v1.0',
+      description="Advance API request header method for G19 Dev Tooling ",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="awsrarebread@gmail.com"),
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
+# Create a router and register our viewsets with it.
+router = DefaultRouter()
+router.register(r'contracts', api.ContractViewSet, basename='contract')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('', views.home, name='home'),
+    path('docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
+
+    # The API URLs are now determined automatically by the router.
+    path('api/', include(router.urls)),
+    
+
+
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
