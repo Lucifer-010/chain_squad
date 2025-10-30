@@ -4,7 +4,7 @@ This repository contains the front-end implementation for Arbiscan, a dedicated 
 
 The goal of this project is to move developers from a state of "hoping it works" to "knowing it works" by providing a single, easy-to-use tool for critical infrastructure monitoring.
 
-Key Features
+Key Features:
 This UI is built with a focus on functionality, clarity, and user experience.
 Core UI & UX
 -Fully Responsive Design: A fluid layout ensures a seamless experience on desktop, tablet, and mobile devices, allowing for monitoring on the go.
