@@ -4,9 +4,8 @@ This repository contains the front-end implementation for Arbiscan, a dedicated 
 
 The goal of this project is to move developers from a state of "hoping it works" to "knowing it works" by providing a single, easy-to-use tool for critical infrastructure monitoring.
 
-✨ Key Features
+Key Features
 This UI is built with a focus on functionality, clarity, and user experience.
-
 Core UI & UX
 -Fully Responsive Design: A fluid layout ensures a seamless experience on desktop, tablet, and mobile devices, allowing for monitoring on the go.
 
@@ -18,9 +17,7 @@ Core UI & UX
 
 
 Core Monitoring Components
-
 The dashboard is designed to display the vital health metrics required for any production-grade L3 chain. The UI components are wired to display:
-
 -Key Health Metric Cards: Prominent cards at the top of the dashboard provide immediate insight into:
    1. Chain Uptime and current block number.
    2. Sequencer ETH Balance to monitor gas funds.
