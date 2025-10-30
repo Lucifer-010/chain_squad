@@ -1,114 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="transition-colors duration-200">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbitrum L3 RPC Analytics</title>
+    <title>Arbiscan - Arbitrum L3 RPC Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a202c;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4a5568;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #718096;
-        }
-        .modal {
-            transition: opacity 0.2s ease-in-out;
-            visibility: hidden;
-        }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        /* Light Theme Overrides */
-        html.light {
-            --bg-primary: #f9fafb; /* gray-50 */
-            --bg-secondary: #ffffff; /* white */
-            --bg-tertiary: #f3f4f6; /* gray-100 */
-            --bg-quaternary: #e5e7eb; /* gray-200 */
-            --text-primary: #111827; /* gray-900 */
-            --text-secondary: #374151; /* gray-700 */
-            --text-muted: #6b7280; /* gray-500 */
-            --border-color: #d1d5db; /* gray-300 */
-            --cyan-text: #0e7490; /* cyan-700 */
-            --cyan-bg: #22d3ee; /* cyan-400 */
-            --cyan-bg-hover: #0891b2; /* cyan-600 */
-        }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-        html.light body { background-color: var(--bg-primary); color: var(--text-primary); }
-        html.light .bg-gray-900 { background-color: var(--bg-primary) !important; }
-        html.light .bg-gray-800 { background-color: var(--bg-secondary) !important; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-        html.light .bg-gray-700 { background-color: var(--bg-tertiary) !important; }
-        html.light .text-white { color: var(--text-primary) !important; }
-        html.light .text-gray-300 { color: var(--text-secondary) !important; }
-        html.light .text-gray-400 { color: var(--text-muted) !important; }
-        html.light .text-cyan-400 { color: var(--cyan-text) !important; }
-        html.light .border-gray-600 { border-color: var(--border-color) !important; }
-        html.light .border-l-4.border-red-500 { border-color: #ef4444 !important; }
-        html.light .bg-cyan-600 { background-color: var(--cyan-bg) !important; color: var(--text-primary) !important; }
-        html.light .hover\:bg-cyan-700:hover { background-color: var(--cyan-bg-hover) !important; }
-
-        /* Scrollbar light theme */
-        html.light ::-webkit-scrollbar-track { background: var(--bg-quaternary); }
-        html.light ::-webkit-scrollbar-thumb { background: #a3a3a3; }
-        html.light ::-webkit-scrollbar-thumb:hover { background: #737373; }
-        
-        /* Modals light theme */
-        html.light .bg-gray-900.bg-opacity-75 { background-color: rgba(107, 114, 128, 0.75) !important; }
-        
-        /* Banners light theme */
-        html.light #health-alert-banner { background-color: #fee2e2 !important; color: #b91c1c !important; }
-        html.light .text-yellow-400 { color: #ca8a04 !important; }
-        html.light #global-message.bg-green-800 { background-color: #dcfce7 !important; }
-        html.light #global-message.text-green-100 { color: #15803d !important; }
-        html.light #global-message.bg-red-800 { background-color: #fee2e2 !important; }
-        html.light #global-message.text-red-100 { color: #b91c1c !important; }
-        html.light #global-message.bg-blue-800 { background-color: #dbeafe !important; }
-        html.light #global-message.text-blue-100 { color: #1e40af !important; }
-
+    <script>
+      // Tailwind CSS Configuration
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              arbitrum: {
+                blue: "#28a0f0",
+                "blue-dark": "#145f8f",
+                red: "#f05128",
+              },
+            },
+            backgroundColor: {
+              dark: {
+                primary: '#0f172a',    // Darker blue-gray
+                secondary: '#1e293b',  // Dark blue-gray
+                card: '#1e293b',       // Card background
+                hover: '#334155',      // Lighter for hover
+                accent: '#3b82f6'      // Accent color
+              }
+            },
+            textColor: {
+              dark: {
+                primary: '#e2e8f0',
+                secondary: '#94a3b8',
+                accent: '#60a5fa',
+                muted: '#64748b',
+                heading: '#f8fafc'
+              }
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/css">
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .modal {
+          transition: opacity 0.2s ease-in-out;
+          visibility: hidden;
+      }
+      /* Mobile Menu Animation */
+      #mobile-menu {
+        transition: all 0.3s ease-in-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none; /* Prevent interaction when hidden */
+      }
+      #mobile-menu.is-open {
+        max-height: 300px; /* Adjust based on your content */
+        opacity: 1;
+        pointer-events: auto; /* Allow interaction when visible */
+      }
     </style>
 </head>
 
-<body class="bg-gray-900 text-white font-sans antialiased">
-    <div class="container mx-auto p-4 md:p-8">
-        <header class="mb-8">
-            <h1 class="text-3xl font-bold text-cyan-400">Arbitrum L3 - RPC Analytics Dashboard</h1>
-            <p class="text-gray-400">Real-time data from the Arbitrum L3 network.</p>
-            <nav class="mt-4 flex justify-end items-center space-x-4">
-                <button id="theme-toggle" class="p-2 rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none">
-                    <svg id="theme-toggle-dark-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM4.464 4.05a1 1 0 00-1.414 1.414l.707.707a1 1 0 101.414-1.414l-.707-.707zM15.536 15.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM1.05 10.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM10 0a1 1 0 011 1v1a1 1 0 11-2 0V1a1 1 0 011-1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+<body class="bg-gray-50 dark:bg-dark-primary text-sm text-gray-800 dark:text-dark-primary transition-colors duration-200">
+    <div id="app">
+      <!-- Header -->
+      <header class="bg-white dark:bg-dark-secondary border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 relative">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16">
+            <div class="flex items-center space-x-8">
+              <div class="flex-shrink-0">
+                <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-400 dark:to-blue-600">
+                  ARBISCAN
+                </span>
+              </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+              <div class="flex items-center space-x-4">
+                  <button id="login-btn" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors">Login</button>
+                  <button id="signup-btn" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors">Sign Up</button>
+                  <button id="logout-btn" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors hidden">Logout</button>
+                  <button id="profile-btn" class="text-gray-700 hover:text-blue-600 dark:text-dark-primary dark:hover:text-dark-accent transition-colors hidden">Profile</button>
+                  <div class="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
+                  <button id="theme-toggle" class="transition-all duration-300 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-500 dark:text-gray-400" aria-label="Toggle dark mode" title="Toggle dark mode">
+                      <svg id="theme-toggle-light-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM4.464 4.05a1 1 0 00-1.414 1.414l.707.707a1 1 0 101.414-1.414l-.707-.707zM15.536 15.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM1.05 10.95a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM10 0a1 1 0 011 1v1a1 1 0 11-2 0V1a1 1 0 011-1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                      <svg id="theme-toggle-dark-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                  </button>
+              </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden flex items-center space-x-2">
+                <button id="theme-toggle-mobile" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-700 dark:text-dark-primary">
+                    <!-- Icons will be managed by JS -->
                 </button>
-                <button id="login-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">Login</button>
-                <button id="signup-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">Sign Up</button>
-                <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 hidden">Logout</button>
-                <button id="profile-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 hidden">Profile</button>
-            </nav>
-        </header>
+                <button id="mobile-menu-button" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-gray-700 dark:text-dark-primary" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
+                    <svg id="menu-open-icon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    <svg id="menu-close-icon" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+          </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="absolute left-0 w-full bg-white dark:bg-dark-secondary shadow-lg dark:shadow-xl md:hidden z-40 border-t border-gray-200 dark:border-gray-700" aria-hidden="true">
+          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <button id="login-btn-mobile" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors">Login</button>
+              <button id="signup-btn-mobile" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors">Sign Up</button>
+              <button id="logout-btn-mobile" class="hidden w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors">Logout</button>
+              <button id="profile-btn-mobile" class="hidden w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-white hover:bg-blue-500 dark:text-dark-primary dark:hover:text-white dark:hover:bg-blue-600 transition-colors">Profile</button>
+          </div>
+        </div>
+      </header>
 
         <!-- Global Message Area -->
-        <div id="global-message" class="mb-4 p-3 rounded-lg text-center hidden"></div>
+        <div id="global-message-container" class="fixed top-20 right-4 z-50"></div>
 
-
-        <!-- RPC URL Input Form -->
-        <div class="mb-6">
-            <form id="rpc-form" class="bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <label for="rpc_url" class="text-gray-300 font-medium whitespace-nowrap">Analyze RPC URL:</label>
-                <input type="text" id="rpc_url" name="rpc_url"  class="flex-grow w-full sm:w-auto bg-gray-700 text-white border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Enter L3 rpc url e.g https://your-rpc-endpoint.com">
-                <button type="submit" class="w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center justify-center">
-                    Analyze
-                </button>
+      <!-- Main Content -->
+      <main class="p-4 md:p-6 lg:p-8 dark:bg-dark-primary transition-colors">
+        <div class="max-w-screen-2xl mx-auto space-y-6">
+          <!-- Hero Section -->
+          <section class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg p-6 md:p-10 text-white text-center mb-4">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">
+              Arbitrum L3 RPC Analytics Dashboard
+            </h1>
+            <form id="rpc-form" class="max-w-2xl mx-auto relative">
+              <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </div>
+              <input id="rpc_url" type="text" name="rpc_url" placeholder="Enter L3 RPC URL to analyze... e.g., https://your-rpc-endpoint.com" class="w-full p-3 pl-10 pr-28 rounded-md text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-transparent" autocomplete="off" required />
+              <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">
+                  Analyze
+              </button>
             </form>
-        </div>
+          </section>
+
+          <!-- Recent Analyses -->
+          <div id="recent-analyses-container" class="max-w-2xl mx-auto hidden">
+              <h3 class="text-sm font-medium text-gray-500 dark:text-dark-secondary mb-2">Recent Analyses:</h3>
+              <div id="recent-analyses-list" class="flex flex-wrap gap-2"></div>
+              <button id="clear-recent-analyses" class="text-xs text-red-500 hover:underline mt-2">Clear History</button>
+          </div>
 
         <!-- Health Alerts -->
-        <div id="health-alert-banner" class="bg-red-900 border-l-4 border-red-500 text-red-100 p-4 mb-6 rounded-lg shadow-lg hidden" role="alert">
+        <div id="health-alert-banner" class="bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-700 dark:text-red-200 p-4 mb-6 rounded-lg shadow-lg hidden" role="alert">
             <p class="font-bold flex items-center">
                 <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 Health Alert
@@ -119,14 +165,14 @@
         </div>
 
         <!-- Telegram Config -->
-        <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-6">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200 col-span-1 md:col-span-2 lg:col-span-4">
+            <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 Telegram Notifications
             </h2>
             <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <input type="text" id="telegram-bot-token" class="flex-grow w-full sm:w-auto bg-gray-700 text-white border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Your Telegram Bot Token">
-                <input type="text" id="telegram-chat-id" class="flex-grow w-full sm:w-auto bg-gray-700 text-white border border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Your Telegram Chat ID">
+                <input type="text" id="telegram-bot-token" class="flex-grow w-full sm:w-auto bg-gray-100 dark:bg-dark-secondary text-gray-800 dark:text-dark-primary border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your Telegram Bot Token">
+                <input type="text" id="telegram-chat-id" class="flex-grow w-full sm:w-auto bg-gray-100 dark:bg-dark-secondary text-gray-800 dark:text-dark-primary border border-gray-300 dark:border-gray-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your Telegram Chat ID">
                 <button id="save-telegram-config" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition duration-300">
                     Save
                 </button>
@@ -134,129 +180,129 @@
                     Send Log
                 </button>
             </div>
-            <p id="telegram-status" class="text-sm text-gray-400 mt-2"></p>
-             <p class="text-sm text-gray-400 mt-2">
+            <p id="telegram-status" class="text-sm text-gray-500 dark:text-dark-secondary mt-2"></p>
+             <p class="text-sm text-gray-500 dark:text-dark-secondary mt-2">
                 Need help setting up a bot? Follow the official
-                <a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 underline">
+                <a href="https://core.telegram.org/bots/tutorial" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-400 underline">
                     Telegram Bot Tutorial
                 </a>.
             </p>
-            <p class="text-xs text-yellow-400 mt-2">Note: Credentials are saved in your browser's local storage. Do not use this on a public computer.</p>
+            <p class="text-xs text-yellow-500 dark:text-yellow-400 mt-2">Note: Credentials are saved in your browser's local storage. Do not use this on a public computer.</p>
         </div>
 
-
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Chain Details Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg col-span-1 md:col-span-2 lg:col-span-2">
-                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200 col-span-1 md:col-span-2 lg:col-span-2">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.368a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path></svg>
                     Chain Details
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><span class="font-medium text-gray-400">RPC URL:</span> <span id="rpc-url-display" class="break-all">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Chain ID:</span> <span id="chain-id">N/A</span></div>
-                    <div class="col-span-1 sm:col-span-2"><span class="font-medium text-gray-400">Client Version:</span> <span id="client-version" class="break-all">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">RPC URL:</span> <span id="rpc-url-display" class="break-all text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Chain ID:</span> <span id="chain-id" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div class="col-span-1 sm:col-span-2"><span class="font-medium text-gray-500 dark:text-dark-secondary">Client Version:</span> <span id="client-version" class="break-all text-gray-800 dark:text-dark-primary">N/A</span></div>
                 </div>
             </div>
 
             <!-- Latest Block Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg col-span-1 md:col-span-2 lg:col-span-2">
-                <h2 class="text-xl font-semibold mb-4 flex items-center">
-                     <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7l8 4"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200 col-span-1 md:col-span-2 lg:col-span-2">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                     <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7l8 4"></path></svg>
                     Latest Block
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div><span class="font-medium text-gray-400">Block Number:</span> <span id="latest-block-number">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Timestamp:</span> <span id="block-timestamp">N/A</span></div>
-                    <div class="col-span-1 sm:col-span-2"><span class="font-medium text-gray-400">Block Hash:</span> <span id="block-hash" class="text-sm break-all">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Block Number:</span> <span id="latest-block-number" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Timestamp:</span> <span id="block-timestamp" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div class="col-span-1 sm:col-span-2"><span class="font-medium text-gray-500 dark:text-dark-secondary">Block Hash:</span> <span id="block-hash" class="text-sm break-all text-gray-800 dark:text-dark-primary">N/A</span></div>
                 </div>
             </div>
 
             <!-- Gas Information Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-semibold mb-4 flex items-center text-cyan-400">
-                    <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg>
                     Gas Information
                 </h2>
                 <div class="space-y-2">
-                    <div><span class="font-medium text-gray-400">Gas Limit:</span> <span id="gas-limit">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Gas Used:</span> <span id="gas-used">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Base Fee (Gwei):</span> <span id="network-gas-price-gwei">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Gas Limit:</span> <span id="gas-limit" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Gas Used:</span> <span id="gas-used" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Base Fee (Gwei):</span> <span id="network-gas-price-gwei" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
                 </div>
             </div>
 
             <!-- Transaction & Peer Info Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 class="text-xl font-semibold mb-4 flex items-center text-cyan-400">
-                    <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M5.222 14.334A8.002 8.002 0 0112 4a8 8 0 018 8 8 8 0 01-8 8 8 8 0 01-8-8c0-1.555.445-3.007 1.222-4.222z"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M5.222 14.334A8.002 8.002 0 0112 4a8 8 0 018 8 8 8 0 01-8 8 8 8 0 01-8-8c0-1.555.445-3.007 1.222-4.222z"></path></svg>
                     Transactions & Peers
                 </h2>
                 <div class="space-y-2">
-                    <div><span class="font-medium text-gray-400">Transaction Count (latest block):</span> <span id="transaction-count">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Peer Count:</span> <span id="peer-count">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Txs (latest block):</span> <span id="transaction-count" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Peer Count:</span> <span id="peer-count" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
                 </div>
             </div>
 
             <!-- Sequencer & Batch Info Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg col-span-1 md:col-span-2">
-                <h2 class="text-xl font-semibold mb-4 flex items-center text-cyan-400">
-                    <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 5V3m0 18v-2M9 5l2 2m4 0l2-2M9 19l2-2m4 0l2 2"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200 col-span-1 md:col-span-2">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 5V3m0 18v-2M9 5l2 2m4 0l2-2M9 19l2-2m4 0l2 2"></path></svg>
                     Sequencer
                 </h2>
                 <div class="space-y-2">
-                    <div class="break-all"><span class="font-medium text-gray-400">Sequencer Address:</span> <span id="sequencer-address">N/A</span></div>
-                    <div><span class="font-medium text-gray-400">Sequencer Balance:</span> <span id="sequencer-balance-eth">N/A</span> ETH</div>
+                    <div class="break-all"><span class="font-medium text-gray-500 dark:text-dark-secondary">Address:</span> <span id="sequencer-address" class="text-gray-800 dark:text-dark-primary">N/A</span></div>
+                    <div><span class="font-medium text-gray-500 dark:text-dark-secondary">Balance:</span> <span id="sequencer-balance-eth" class="text-gray-800 dark:text-dark-primary">N/A</span> ETH</div>
                 </div>
             </div>
 
             <!-- Analytics Card -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg col-span-1 md:col-span-2 lg:col-span-4">
-                <h2 class="text-xl font-semibold mb-4 flex items-center text-cyan-400">
-                   <svg class="w-6 h-6 mr-2 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm hover:shadow-md dark:shadow-lg dark:shadow-black/20 dark:hover:shadow-xl dark:hover:shadow-black/30 transition-all duration-200 col-span-1 md:col-span-2 lg:col-span-4">
+                <h2 class="text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-dark-heading">
+                   <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     Historical Performance
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                    <div class="bg-gray-700 p-4 rounded-md">
-                        <div class="text-gray-400 text-sm">Avg. TXs / Block</div>
+                    <div class="bg-gray-100 dark:bg-dark-secondary p-4 rounded-md">
+                        <div class="text-gray-500 dark:text-dark-secondary text-sm">Avg. TXs / Block</div>
                         <div id="avg-txs-per-block" class="text-2xl font-bold">N/A</div>
                     </div>
-                    <div class="bg-gray-700 p-4 rounded-md">
-                        <div class="text-gray-400 text-sm">Avg. Gas Used %</div>
+                    <div class="bg-gray-100 dark:bg-dark-secondary p-4 rounded-md">
+                        <div class="text-gray-500 dark:text-dark-secondary text-sm">Avg. Gas Used %</div>
                         <div id="avg-gas-per-block" class="text-2xl font-bold">N/A</div>
                     </div>
-                    <div class="bg-gray-700 p-4 rounded-md">
-                        <div class="text-gray-400 text-sm">Avg. Block Time</div>
+                    <div class="bg-gray-100 dark:bg-dark-secondary p-4 rounded-md">
+                        <div class="text-gray-500 dark:text-dark-secondary text-sm">Avg. Block Time</div>
                         <div id="avg-block-time" class="text-2xl font-bold">N/A</div>
                     </div>
                 </div>
                 <!-- Charts Section -->
                 <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-gray-700 p-4 rounded-md">
+                    <div class="bg-gray-100 dark:bg-dark-secondary p-4 rounded-md">
                         <h3 class="text-lg font-semibold mb-2">Block Time (Last 20 Blocks)</h3>
                         <canvas id="blockTimeChart"></canvas>
                     </div>
-                    <div class="bg-gray-700 p-4 rounded-md">
+                    <div class="bg-gray-100 dark:bg-dark-secondary p-4 rounded-md">
                         <h3 class="text-lg font-semibold mb-2">Transactions per Block (Last 20 Blocks)</h3>
                         <canvas id="txsPerBlockChart"></canvas>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
+      </main>
     </div>
 
     <!-- Login Modal -->
     <div id="login-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md relative">
-            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-6 text-cyan-400">Login</h2>
+        <div class="bg-white dark:bg-dark-secondary p-8 rounded-lg shadow-xl w-full max-w-md relative">
+            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-blue-500 dark:text-blue-400">Login</h2>
             <form id="login-form">
                 <div class="mb-4">
-                    <label for="login-username" class="block text-gray-300 text-sm font-bold mb-2">Username:</label>
-                    <input type="text" id="login-username" name="username" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="login-username" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Username:</label>
+                    <input type="text" id="login-username" name="username" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-blue-500" required>
                 </div>
                 <div class="mb-6">
-                    <label for="login-password" class="block text-gray-300 text-sm font-bold mb-2">Password:</label>
-                    <input type="password" id="login-password" name="password" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="login-password" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Password:</label>
+                    <input type="password" id="login-password" name="password" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-blue-500" required>
                 </div>
                 <div class="flex items-center justify-between">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
@@ -266,70 +312,64 @@
                         Don't have an account? Sign Up
                     </a>
                 </div>
-                <p id="login-error-message" class="text-red-400 text-sm mt-4 hidden"></p>
+                <p id="login-error-message" class="text-red-500 dark:text-red-400 text-sm mt-4 hidden"></p>
             </form>
         </div>
     </div>
 
     <!-- Signup Modal -->
     <div id="signup-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md relative">
-            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-6 text-cyan-400">Sign Up</h2>
+        <div class="bg-white dark:bg-dark-secondary p-8 rounded-lg shadow-xl w-full max-w-md relative">
+            <button class="modal-close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-800 dark:hover:text-white text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-green-500 dark:text-green-400">Sign Up</h2>
             <form id="signup-form">
                 <div class="mb-4">
-                    <label for="signup-username" class="block text-gray-300 text-sm font-bold mb-2">Username:</label>
-                    <input type="text" id="signup-username" name="username" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="signup-username" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Username:</label>
+                    <input type="text" id="signup-username" name="username" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <div class="mb-4">
-                    <label for="signup-email" class="block text-gray-300 text-sm font-bold mb-2">Email:</label>
-                    <input type="email" id="signup-email" name="email" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="signup-email" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="signup-email" name="email" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <div class="mb-4">
-                    <label for="signup-password" class="block text-gray-300 text-sm font-bold mb-2">Password:</label>
-                    <input type="password" id="signup-password" name="password" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="signup-password" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Password:</label>
+                    <input type="password" id="signup-password" name="password" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <div class="mb-6">
-                    <label for="signup-password2" class="block text-gray-300 text-sm font-bold mb-2">Confirm Password:</label>
-                    <input type="password" id="signup-password2" name="password2" class="shadow appearance-none border border-gray-600 rounded w-full py-2 px-3 bg-gray-700 text-white mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-cyan-500" required>
+                    <label for="signup-password2" class="block text-gray-700 dark:text-dark-primary text-sm font-bold mb-2">Confirm Password:</label>
+                    <input type="password" id="signup-password2" name="password2" class="shadow appearance-none border border-gray-300 dark:border-gray-600 rounded w-full py-2 px-3 bg-gray-100 dark:bg-dark-primary text-gray-800 dark:text-dark-primary mb-3 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-green-500" required>
                 </div>
                 <div class="flex items-center justify-between">
                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Register
                     </button>
-                    <a href="#" id="switch-to-login" class="inline-block align-baseline font-bold text-sm text-green-400 hover:text-green-200">
+                    <a href="#" id="switch-to-login" class="inline-block align-baseline font-bold text-sm text-green-500 hover:text-green-400">
                         Already have an account? Login
                     </a>
                 </div>
-                <p id="signup-error-message" class="text-red-400 text-sm mt-4 hidden"></p>
+                <p id="signup-error-message" class="text-red-500 dark:text-red-400 text-sm mt-4 hidden"></p>
             </form>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% csrf_token %}
+<script>
+  const CSRF_TOKEN = "{{ csrf_token }}";
+</script>
+
     <script>
         // Helper to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        const CSRF_TOKEN = getCookie('csrftoken');
-
+        
         // --- Global UI Elements ---
-        const globalMessage = document.getElementById('global-message');
+        const globalMessageContainer = document.getElementById('global-message-container');
         const loginBtn = document.getElementById('login-btn');
         const signupBtn = document.getElementById('signup-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const profileBtn = document.getElementById('profile-btn');
+        const loginBtnMobile = document.getElementById('login-btn-mobile');
+        const signupBtnMobile = document.getElementById('signup-btn-mobile');
+        const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+        const profileBtnMobile = document.getElementById('profile-btn-mobile');
+
         const rpcUrlInput = document.getElementById('rpc_url');
         const analyzeForm = document.getElementById('rpc-form');
 
@@ -340,6 +380,9 @@
         const signupForm = document.getElementById('signup-form');
         const loginErrorMessage = document.getElementById('login-error-message');
         const signupErrorMessage = document.getElementById('signup-error-message');
+
+        // --- Global State ---
+        let currentAnalyticsData = null;
 
         // --- Chart Instances ---
         let blockTimeChart;
@@ -357,12 +400,23 @@
         }
 
         function showGlobalMessage(message, type = 'info') {
-            globalMessage.textContent = message;
-            globalMessage.className = `mb-4 p-3 rounded-lg text-center ${type === 'success' ? 'bg-green-800 text-green-100' : type === 'error' ? 'bg-red-800 text-red-100' : 'bg-blue-800 text-blue-100'}`;
-            globalMessage.classList.remove('hidden');
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            let bgColor, textColor;
+            if (type === 'success') {
+                [bgColor, textColor] = document.documentElement.classList.contains('dark') ? ['bg-green-800', 'text-green-100'] : ['bg-green-100', 'text-green-800'];
+            } else if (type === 'error') {
+                [bgColor, textColor] = document.documentElement.classList.contains('dark') ? ['bg-red-800', 'text-red-100'] : ['bg-red-100', 'text-red-800'];
+            } else {
+                [bgColor, textColor] = document.documentElement.classList.contains('dark') ? ['bg-blue-800', 'text-blue-100'] : ['bg-blue-100', 'text-blue-800'];
+            }
+            messageDiv.className = `p-3 mb-2 rounded-lg shadow-lg transition-opacity duration-300 ${bgColor} ${textColor}`;
+            globalMessageContainer.appendChild(messageDiv);
+
             setTimeout(() => {
-                globalMessage.classList.add('hidden');
-            }, 5000);
+                messageDiv.style.opacity = '0';
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 4700);
         }
 
         function updateAuthUI() {
@@ -372,11 +426,19 @@
                 signupBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
                 profileBtn.classList.remove('hidden');
+                loginBtnMobile.classList.add('hidden');
+                signupBtnMobile.classList.add('hidden');
+                logoutBtnMobile.classList.remove('hidden');
+                profileBtnMobile.classList.remove('hidden');
             } else {
                 loginBtn.classList.remove('hidden');
                 signupBtn.classList.remove('hidden');
                 logoutBtn.classList.add('hidden');
                 profileBtn.classList.add('hidden');
+                loginBtnMobile.classList.remove('hidden');
+                signupBtnMobile.classList.remove('hidden');
+                logoutBtnMobile.classList.add('hidden');
+                profileBtnMobile.classList.add('hidden');
             }
         }
 
@@ -420,7 +482,9 @@
 
         // --- Event Listeners for Modals ---
         loginBtn.addEventListener('click', () => showModal(loginModal));
+        loginBtnMobile.addEventListener('click', () => showModal(loginModal));
         signupBtn.addEventListener('click', () => showModal(signupModal));
+        signupBtnMobile.addEventListener('click', () => showModal(signupModal));
         document.querySelectorAll('.modal-close-btn').forEach(button => {
             button.addEventListener('click', (e) => hideModal(e.target.closest('.modal')));
         });
@@ -444,6 +508,7 @@
         });
 
         logoutBtn.addEventListener('click', () => {
+            logoutBtnMobile.click();
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             updateAuthUI();
@@ -527,7 +592,7 @@
 
         // --- Analytics Data Fetching and Display ---
         async function fetchAndDisplayAnalytics(rpcUrl) {
-            const url = `/api/monitor/`; // Corrected URL
+            const url = `/api/monitor/`;
             try {
                 const response = await fetch(url, {
                     method: 'POST', // Corrected method
@@ -543,6 +608,7 @@
                     throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                currentAnalyticsData = data; // Store the latest data globally
                 updateDashboardUI(data);
                 updateCharts(data);
                 showGlobalMessage('Analytics data updated successfully!', 'success');
@@ -550,50 +616,53 @@
                 console.error('Error fetching analytics:', error);
                 showGlobalMessage(`Error fetching analytics: ${error.message}`, 'error');
                 clearDashboardUI();
+                currentAnalyticsData = null; // Clear data on error
             }
         }
 
         function updateDashboardUI(data) {
-            // Mapping from the provided curl response
-            document.getElementById('rpc-url-display').textContent = data.chain_info?.rpc_url || 'N/A';
-            document.getElementById('chain-id').textContent = data.chain_info?.chain_id || 'N/A';
-            document.getElementById('client-version').textContent = data.chain_info?.client_version || 'N/A';
-            
-            document.getElementById('latest-block-number').textContent = data.latest_block_analytics?.block_number || 'N/A';
-            document.getElementById('block-timestamp').textContent = data.latest_block_analytics?.block_timestamp_utc ? new Date(data.latest_block_analytics.block_timestamp_utc).toLocaleString() : 'N/A';
-            document.getElementById('block-hash').textContent = data.latest_block_analytics?.block_hash || 'N/A';
+          // Chain Details
+          document.getElementById('rpc-url-display').textContent = data.chain_info?.rpc_url || 'N/A';
+          document.getElementById('chain-id').textContent = data.chain_info?.chain_id || 'N/A';
+          document.getElementById('client-version').textContent = data.chain_info?.client_version || 'N/A';
 
-            document.getElementById('gas-limit').textContent = data.latest_block_analytics?.gas_limit?.toLocaleString() || 'N/A';
-            document.getElementById('gas-used').textContent = data.latest_block_analytics?.gas_used?.toLocaleString() || 'N/A';
-            document.getElementById('network-gas-price-gwei').textContent = data.latest_block_analytics?.base_fee_per_gas_gwei !== undefined ? `${data.latest_block_analytics.base_fee_per_gas_gwei.toFixed(2)}` : 'N/A';
-            
-            document.getElementById('transaction-count').textContent = data.latest_block_analytics?.transaction_count || 'N/A';
-            document.getElementById('peer-count').textContent = data.node_health?.peer_count || 'N/A';
-            
-            document.getElementById('sequencer-address').textContent = data.sequencer_info?.address || 'N/A';
-            document.getElementById('sequencer-balance-eth').textContent = data.sequencer_info?.balance_eth !== undefined ? `${data.sequencer_info.balance_eth.toFixed(4)}` : 'N/A';
+          // Latest Block
+          document.getElementById('latest-block-number').textContent = data.latest_block_analytics?.block_number || 'N/A';
+          document.getElementById('block-timestamp').textContent = data.latest_block_analytics?.block_timestamp_utc ? new Date(data.latest_block_analytics.block_timestamp_utc).toLocaleString() : 'N/A';
+          document.getElementById('block-hash').textContent = data.latest_block_analytics?.block_hash || 'N/A';
 
-            // Historical Performance
-            document.getElementById('avg-txs-per-block').textContent = data.historical_performance?.avg_txs_per_block || 'N/A';
-            document.getElementById('avg-gas-per-block').textContent = `${data.historical_performance?.avg_gas_used_percentage || '0.00'}%`;
-            document.getElementById('avg-block-time').textContent = `${data.historical_performance?.avg_block_time_seconds || 'N/A'} sec`;
+          // Gas Information
+          document.getElementById('gas-limit').textContent = data.latest_block_analytics?.gas_limit?.toLocaleString() || 'N/A';
+          document.getElementById('gas-used').textContent = data.latest_block_analytics?.gas_used?.toLocaleString() || 'N/A';
+          document.getElementById('network-gas-price-gwei').textContent = data.latest_block_analytics?.base_fee_per_gas_gwei !== undefined ? `${parseFloat(data.latest_block_analytics.base_fee_per_gas_gwei).toFixed(2)}` : 'N/A';
 
-            // Health Alerts
-            const healthAlertBanner = document.getElementById('health-alert-banner');
-            const healthAlertList = healthAlertBanner ? healthAlertBanner.querySelector('ul') : null;
-            if (data.overall_status === "ALERT" && data.health_alerts && data.health_alerts.length > 0) {
-                if (healthAlertBanner) healthAlertBanner.classList.remove('hidden');
-                if (healthAlertList) {
-                    healthAlertList.innerHTML = '';
-                    data.health_alerts.forEach(alert => {
-                        const li = document.createElement('li');
-                        li.textContent = alert;
-                        healthAlertList.appendChild(li);
-                    });
-                }
-            } else {
-                if (healthAlertBanner) healthAlertBanner.classList.add('hidden');
-            }
+          // Transactions & Peers
+          document.getElementById('transaction-count').textContent = data.latest_block_analytics?.transaction_count ?? 'N/A';
+          document.getElementById('peer-count').textContent = data.node_health?.peer_count ?? 'N/A';
+
+          // Sequencer
+          document.getElementById('sequencer-address').textContent = data.sequencer_info?.address || 'N/A';
+          document.getElementById('sequencer-balance-eth').textContent = data.sequencer_info?.balance_eth !== undefined ? `${parseFloat(data.sequencer_info.balance_eth).toFixed(4)}` : 'N/A';
+
+          // Historical Performance
+          document.getElementById('avg-txs-per-block').textContent = data.historical_performance?.avg_txs_per_block || 'N/A';
+          document.getElementById('avg-gas-per-block').textContent = `${data.historical_performance?.avg_gas_used_percentage || '0.00'}%`;
+          document.getElementById('avg-block-time').textContent = `${data.historical_performance?.avg_block_time_seconds || 'N/A'} sec`;
+
+          // Health Alerts
+          const healthAlertBanner = document.getElementById('health-alert-banner');
+          const healthAlertList = healthAlertBanner.querySelector('ul');
+          if (data.overall_status === "ALERT" && data.health_alerts?.length > 0) {
+              healthAlertList.innerHTML = '';
+              data.health_alerts.forEach(alert => {
+                  const li = document.createElement('li');
+                  li.textContent = alert;
+                  healthAlertList.appendChild(li);
+              });
+              healthAlertBanner.classList.remove('hidden');
+          } else {
+              healthAlertBanner.classList.add('hidden');
+          }
         }
 
         function clearDashboardUI() {
@@ -610,6 +679,7 @@
             });
             const healthAlertBanner = document.getElementById('health-alert-banner');
             if (healthAlertBanner) healthAlertBanner.classList.add('hidden');
+            currentAnalyticsData = null;
         }
 
         function updateCharts(data) {
@@ -639,12 +709,16 @@
             blockTimeChart = new Chart(blockTimeCtx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: labels.map(l => `#${l}`),
                     datasets: [{
                         label: 'Avg. Block Time (seconds)',
                         data: blockTimeData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.5)',
+                        borderColor: '#3b82f6',
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3b82f6',
                         borderWidth: 1,
                         tension: 0.1
                     }]
@@ -652,7 +726,19 @@
                 options: {
                     responsive: true,
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Seconds' } } }
-                }
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Seconds' }, grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e5e7eb' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#374151' }
+                        }
+                    }
+                },
             });
 
             // Transactions per Block Chart
@@ -661,58 +747,137 @@
             txsPerBlockChart = new Chart(txsPerBlockCtx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: labels.map(l => `#${l}`),
                     datasets: [{
                         label: 'Transactions per Block',
                         data: txCounts,
-                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(139, 92, 246, 0.6)' : 'rgba(139, 92, 246, 0.7)',
+                        borderColor: '#8B5CF6',
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
-                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Transactions' } } }
-                }
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Transactions' }, grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e5e7eb' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#374151'
+                            }
+                        }
+                    }
+                },
             });
         }
+
+        // --- Local Storage for Recent Analyses ---
+        const RECENT_URLS_KEY = 'recentRpcUrls';
+        const MAX_RECENT_URLS = 5;
+
+        function saveRpcUrl(rpcUrl) {
+            let urls = JSON.parse(localStorage.getItem(RECENT_URLS_KEY) || '[]');
+            // Remove if exists to move to the front
+            urls = urls.filter(u => u !== rpcUrl);
+            // Add to the front
+            urls.unshift(rpcUrl);
+            // Trim to max length
+            urls = urls.slice(0, MAX_RECENT_URLS);
+            localStorage.setItem(RECENT_URLS_KEY, JSON.stringify(urls));
+            renderRecentAnalyses();
+        }
+
+        function renderRecentAnalyses() {
+            const urls = JSON.parse(localStorage.getItem(RECENT_URLS_KEY) || '[]');
+            const container = document.getElementById('recent-analyses-container');
+            const list = document.getElementById('recent-analyses-list');
+
+            if (urls.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            list.innerHTML = '';
+
+            urls.forEach(url => {
+                const button = document.createElement('button');
+                button.textContent = new URL(url).hostname; // Show hostname for brevity
+                button.title = url;
+                button.className = 'bg-gray-200 dark:bg-dark-hover text-xs text-gray-700 dark:text-dark-secondary px-2 py-1 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors';
+                button.onclick = () => {
+                    rpcUrlInput.value = url;
+                    fetchAndDisplayAnalytics(url);
+                };
+                list.appendChild(button);
+            });
+        }
+
+        document.getElementById('clear-recent-analyses').addEventListener('click', () => {
+            localStorage.removeItem(RECENT_URLS_KEY);
+            renderRecentAnalyses();
+            showGlobalMessage('Recent analyses history cleared.', 'info');
+        });
+
 
         // --- Initial Load and Form Submission ---
         document.addEventListener('DOMContentLoaded', function() {
             // --- THEME TOGGLE LOGIC ---
             const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleMobileBtn = document.getElementById('theme-toggle-mobile');
             const darkIcon = document.getElementById('theme-toggle-dark-icon');
             const lightIcon = document.getElementById('theme-toggle-light-icon');
 
             function applyTheme(theme) {
-                if (theme === 'dark') {
-                    document.documentElement.classList.remove('light');
-                    darkIcon.classList.remove('hidden');
-                    lightIcon.classList.add('hidden');
-                } else {
-                    document.documentElement.classList.add('light');
-                    darkIcon.classList.add('hidden');
-                    lightIcon.classList.remove('hidden');
+                const isDark = theme === 'dark';
+                document.documentElement.classList.toggle('dark', isDark);
+                
+                // Main toggle button
+                if (darkIcon && lightIcon) {
+                    darkIcon.classList.toggle('hidden', !isDark);
+                    lightIcon.classList.toggle('hidden', isDark);
+                }
+
+                // Mobile toggle button
+                if (themeToggleMobileBtn) {
+                    themeToggleMobileBtn.innerHTML = isDark 
+                        ? lightIcon.outerHTML.replace('hidden', '') 
+                        : darkIcon.outerHTML.replace('hidden', '');
+                }
+
+                // Re-render charts with new theme colors
+                const currentRpcUrl = rpcUrlInput.value.trim();
+                if(currentRpcUrl && (blockTimeChart || txsPerBlockChart)) {
+                    fetchAndDisplayAnalytics(currentRpcUrl);
                 }
             }
 
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = localStorage.getItem('theme') || (document.documentElement.classList.contains('light') ? 'light' : 'dark');
+            function toggleTheme() {
+                const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 localStorage.setItem('theme', newTheme);
                 applyTheme(newTheme);
-            });
+            }
+            
+            themeToggleBtn.addEventListener('click', toggleTheme);
+            themeToggleMobileBtn.addEventListener('click', toggleTheme);
             
             // Set initial theme on page load
             (function() {
                 const savedTheme = localStorage.getItem('theme');
                 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let theme;
                 if (savedTheme) {
-                    applyTheme(savedTheme);
+                    theme = savedTheme;
                 } else if (systemPrefersDark) {
-                    applyTheme('dark');
+                    theme = 'dark';
                 } else {
-                    applyTheme('light');
+                    theme = 'light';
+                }
+                applyTheme(theme);
+                if (theme === 'dark') {
                 }
             })();
             // --- END THEME TOGGLE LOGIC ---
@@ -730,7 +895,7 @@
             saveButton.addEventListener('click', function() {
                 localStorage.setItem('telegramBotToken', botTokenInput.value);
                 localStorage.setItem('telegramChatId', chatIdInput.value);
-                statusElement.textContent = 'Configuration saved!';
+                statusElement.textContent = 'Configuration saved in local storage!';
                 statusElement.className = 'text-sm text-green-400 mt-2';
                 setTimeout(() => statusElement.textContent = '', 3000);
             });
@@ -741,8 +906,8 @@
 
                 if (!botToken || !chatId) {
                     statusElement.textContent = 'Telegram credentials not set. Please save them first.';
-                    statusElement.className = 'text-sm text-yellow-400 mt-2';
-                    return;
+                    statusElement.className = 'text-sm text-yellow-500 dark:text-yellow-400 mt-2';
+                    return false;
                 } 
 
                 try {
@@ -761,22 +926,48 @@
 
                     if (response.ok) {
                         statusElement.textContent = 'Telegram message sent successfully!';
-                        statusElement.className = 'text-sm text-green-400 mt-2';
+                        statusElement.className = 'text-sm text-green-500 dark:text-green-400 mt-2';
+                        return true;
                     } else {
                         const errorData = await response.json();
                         statusElement.textContent = `Failed to send message: ${errorData.error}`;
-                        statusElement.className = 'text-sm text-red-400 mt-2';
+                        statusElement.className = 'text-sm text-red-500 dark:text-red-400 mt-2';
+                        return false;
                     }
                 } catch (error) {
                     console.error('Error sending Telegram alert:', error);
                     statusElement.textContent = 'Error sending message. Check console for details.';
-                    statusElement.className = 'text-sm text-red-400 mt-2';
+                    statusElement.className = 'text-sm text-red-500 dark:text-red-400 mt-2';
+                    return false;
                 }
                  setTimeout(() => statusElement.textContent = '', 5000);
             }
 
+            function formatAnalyticsForTelegram(data) {
+                if (!data) return "No analytics data available to send.";
+
+                const status = data.overall_status === 'ALERT' ? '🔴 ALERT' : '🟢 OK';
+                const alerts = data.health_alerts?.length > 0 ? `\n*Alerts:*\n- ${data.health_alerts.join('\n- ')}` : '';
+
+                return `
+*Chain Health Report*
+*Status: ${status}*
+-----------------------------------
+*RPC URL:* \`${data.chain_info?.rpc_url}\`
+*Chain ID:* ${data.chain_info?.chain_id}
+*Latest Block:* ${data.latest_block_analytics?.block_number}
+*Time Since Block:* ${data.latest_block_analytics?.time_since_block_seconds.toFixed(1)}s
+*Sequencer Balance:* ${parseFloat(data.sequencer_info?.balance_eth).toFixed(4)} ETH
+*Avg. Block Time:* ${data.historical_performance?.avg_block_time_seconds}s
+*Avg. Txs/Block:* ${data.historical_performance?.avg_txs_per_block}
+${alerts}
+-----------------------------------
+Report generated at: ${new Date(data.timestamp_utc).toLocaleString()} UTC
+                `.trim();
+            }
+
             testButton.addEventListener('click', function() {
-                sendTelegramAlert('This is a test notification from the Arbitrum Nova Analytics Dashboard.');
+                sendTelegramAlert(formatAnalyticsForTelegram(currentAnalyticsData));
             });
 
             const initialRpcUrl = rpcUrlInput.value.trim();
@@ -789,13 +980,37 @@
                 const newRpcUrl = rpcUrlInput.value.trim();
                 if (newRpcUrl) {
                     showGlobalMessage('Fetching new analytics data...', 'info');
+                    saveRpcUrl(newRpcUrl);
                     await fetchAndDisplayAnalytics(newRpcUrl);
                 } else {
                     showGlobalMessage('Please enter an RPC URL.', 'error');
                 }
             });
 
+            // Mobile menu functionality
+            const menuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuOpenIcon = document.getElementById('menu-open-icon');
+            const menuCloseIcon = document.getElementById('menu-close-icon');
+
+            function toggleMenu() {
+                const isOpen = mobileMenu.classList.contains('is-open');
+                mobileMenu.classList.toggle('is-open');
+                menuOpenIcon.classList.toggle('hidden', !isOpen);
+                menuCloseIcon.classList.toggle('hidden', isOpen);
+                menuButton.setAttribute('aria-expanded', String(!isOpen));
+            }
+
+            menuButton.addEventListener('click', toggleMenu);
+            document.addEventListener('click', function(event) {
+                const isClickInside = menuButton.contains(event.target) || mobileMenu.contains(event.target);
+                if (!isClickInside && mobileMenu.classList.contains('is-open')) {
+                    toggleMenu();
+                }
+            });
+
             updateAuthUI();
+            renderRecentAnalyses();
         });
     </script>
 </body>
