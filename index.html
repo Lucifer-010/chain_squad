@@ -102,16 +102,7 @@
         transition-property: max-height, opacity, transform, background-color, border-color, box-shadow;
       }
       
-      /* Mobile Language Menu Animation */
-      #mobile-language-menu {
-        transition: opacity 0.2s ease-in-out,
-                    transform 0.2s ease-out;
-        transform-origin: top center;
-        transform: scale(0.95);
-      }
-      #mobile-language-menu:not(.hidden) {
-        transform: scale(1);
-      }
+      /* Removed legacy mobile-language-menu CSS (replaced by #language-dropdown) */
 
       /* Language Dropdown Animations */
       #language-dropdown {
@@ -259,6 +250,9 @@
             mobileMenuSettings: 'Settings',
             mobileMenuLanguage: 'Language',
             mobileMenuTheme: 'Theme'
+            ,viewAllTransactions: 'VIEW ALL TRANSACTIONS →'
+            ,visitTokenDashboard: 'VISIT TOKEN DASHBOARD →'
+            ,visitDefiDashboard: 'VISIT DEFI DASHBOARD →'
           },
           es: {
             analytics: 'Analítica', defi: 'DeFi', leaderboard: 'Clasificación', blockchain: 'Cadena de bloques', resources: 'Recursos',
@@ -311,6 +305,9 @@
             mobileMenuSettings: 'Configuración',
             mobileMenuLanguage: 'Idioma',
             mobileMenuTheme: 'Tema'
+            ,viewAllTransactions: 'VER TODAS LAS TRANSACCIONES →'
+            ,visitTokenDashboard: 'VISITAR PANEL DE TOKENS →'
+            ,visitDefiDashboard: 'VISITAR PANEL DEFI →'
           },
           ja: {
             analytics: '分析', defi: 'DeFi', leaderboard: 'ランキング', blockchain: 'ブロックチェーン', resources: 'リソース',
@@ -363,6 +360,9 @@
             mobileMenuSettings: '設定',
             mobileMenuLanguage: '言語',
             mobileMenuTheme: 'テーマ'
+            ,viewAllTransactions: 'すべてのトランザクションを表示 →'
+            ,visitTokenDashboard: 'トークンダッシュボードを表示 →'
+            ,visitDefiDashboard: 'DeFiダッシュボードへ →'
           },
           ko: {
             analytics: '분석', defi: 'DeFi', leaderboard: '리더보드', blockchain: '블록체인', resources: '자료',
@@ -415,6 +415,9 @@
             mobileMenuSettings: '설정',
             mobileMenuLanguage: '언어',
             mobileMenuTheme: '테마'
+            ,viewAllTransactions: '모든 거래 보기 →'
+            ,visitTokenDashboard: '토큰 대시보드 보기 →'
+            ,visitDefiDashboard: 'DeFi 대시보드 방문 →'
           },
           fr: {
             analytics: 'Analytique', defi: 'DeFi', leaderboard: 'Classement', blockchain: 'Blockchain', resources: 'Ressources',
@@ -467,6 +470,9 @@
             mobileMenuSettings: 'Paramètres',
             mobileMenuLanguage: 'Langue',
             mobileMenuTheme: 'Thème'
+            ,viewAllTransactions: 'VOIR TOUTES LES TRANSACTIONS →'
+            ,visitTokenDashboard: 'VISITER LE TABLEAU DES TOKENS →'
+            ,visitDefiDashboard: 'VISITER LE TABLEAU DE BORD DEFI →'
           }
         };
 
@@ -601,7 +607,17 @@
 
           // close any open language menus
           const menu = document.getElementById('language-menu'); if (menu) menu.classList.add('hidden');
-          const mobileMenu = document.getElementById('mobile-language-menu'); if (mobileMenu) mobileMenu.classList.add('hidden');
+          const dd = document.getElementById('language-dropdown'); if (dd) dd.classList.add('hidden');
+          // Update card and chart headings
+          const tokenTitle = document.getElementById('token-dashboard-title'); if (tokenTitle) tokenTitle.textContent = t.mobileTokensTitle || t.tokenDashboardTitle || 'Token Dashboard';
+          const tpsTitle = document.getElementById('tps-chart-title'); if (tpsTitle) tpsTitle.textContent = t.mobileDailyTransactions || t.dailyTransactionsTitle || 'Daily Transactions';
+          const pingTitle = document.getElementById('ping-chart-title'); if (pingTitle) pingTitle.textContent = t.mobileUniqueAddresses || t.uniqueAddressesTitle || 'Unique Active Addresses';
+
+          // Update footer/action links that should be translated
+          const viewAllLink = document.getElementById('view-all-transactions-link'); if (viewAllLink) viewAllLink.textContent = t.viewAllTransactions || 'VIEW ALL TRANSACTIONS →';
+          const visitTokenLink = document.getElementById('visit-token-dashboard-link'); if (visitTokenLink) visitTokenLink.textContent = t.visitTokenDashboard || 'VISIT TOKEN DASHBOARD →';
+          const visitDefiLink = document.getElementById('visit-defi-dashboard-link'); if (visitDefiLink) visitDefiLink.textContent = t.visitDefiDashboard || t.statsDefiLink || 'VISIT DEFI DASHBOARD →';
+
         }
 
         // Initialize language from storage or default
@@ -627,31 +643,12 @@
           });
         }
 
-        // Mobile language handlers
-        const mobileLangBtn = document.getElementById('mobile-language-button');
-        const mobileLangMenu = document.getElementById('mobile-language-menu');
-        if (mobileLangBtn && mobileLangMenu) {
-          mobileLangBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const isExpanded = mobileLangBtn.getAttribute('aria-expanded') === 'true';
-            mobileLangBtn.setAttribute('aria-expanded', !isExpanded);
-            mobileLangMenu.classList.toggle('hidden');
-          });
-          mobileLangMenu.querySelectorAll('button[data-lang]').forEach(btn => {
-            btn.addEventListener('click', function() {
-              const l = this.getAttribute('data-lang');
-              setLanguage(l);
-              mobileLangMenu.classList.add('hidden');
-              mobileLangBtn.setAttribute('aria-expanded', 'false');
-            });
-          });
-        }
-
         // Close language menus on outside click
         document.addEventListener('click', function() {
           const m = document.getElementById('language-menu'); if (m) m.classList.add('hidden');
-          const mm = document.getElementById('mobile-language-menu'); if (mm) mm.classList.add('hidden');
+          const dd = document.getElementById('language-dropdown'); if (dd) dd.classList.add('hidden');
           if (langBtn) langBtn.setAttribute('aria-expanded', 'false');
+          const mobileToggle = document.getElementById('mobile-language-toggle'); if (mobileToggle) mobileToggle.setAttribute('aria-expanded', 'false');
         });
 
         // Mobile language handling
@@ -755,8 +752,10 @@
         }
 
         function updateLanguageDisplay(lang) {
-            const currentFlag = document.getElementById('current-language-flag');
-            const currentText = document.getElementById('current-language-text');
+      const desktopFlag = document.getElementById('current-language-flag');
+      const desktopLabel = document.getElementById('current-language-label');
+      const mobileFlag = document.getElementById('mobile-current-language-flag');
+      const mobileLabel = document.getElementById('mobile-current-language');
             const langData = {
                 en: { flag: '🇺🇸', text: 'English' },
                 ja: { flag: '🇯🇵', text: '日本語' },
@@ -765,10 +764,12 @@
                 fr: { flag: '🇫🇷', text: 'Français' }
             };
 
-            if (currentFlag && currentText && langData[lang]) {
-                currentFlag.textContent = langData[lang].flag;
-                currentText.textContent = langData[lang].text;
-            }
+      if (langData[lang]) {
+        if (desktopFlag) desktopFlag.textContent = langData[lang].flag;
+        if (desktopLabel) desktopLabel.textContent = langData[lang].text;
+        if (mobileFlag) mobileFlag.textContent = langData[lang].flag;
+        if (mobileLabel) mobileLabel.textContent = langData[lang].text;
+      }
         }
 
         function updateLanguageChecks(selectedLang) {
@@ -1040,8 +1041,8 @@
                   aria-expanded="false"
                   aria-controls="language-dropdown">
                   <span id="current-language-display" class="flex items-center">
-                    <span id="current-language-flag" class="text-xl mr-2" role="img" aria-label="Selected language">🇺🇸</span>
-                    <span id="current-language-text">English</span>
+                      <span id="mobile-current-language-flag" class="text-xl mr-2" role="img" aria-label="Selected language">🇺🇸</span>
+                      <span id="mobile-current-language">English</span>
                   </span>
                   <svg class="w-5 h-5 transition-transform duration-200" id="language-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -1050,7 +1051,7 @@
               </div>
               
               <!-- Language Dropdown -->
-              <div id="language-dropdown" 
+                <div id="language-dropdown" 
                 class="hidden mt-2 py-1 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg transition-all duration-200" 
                 role="menu" 
                 aria-labelledby="mobile-language-heading">
@@ -1128,83 +1129,9 @@
                 <span id="mobile-theme-label" class="text-gray-500">Light</span>
               </button>
               
-              <!-- Language Selector (mobile) -->
-              <div class="relative mt-2">
-                <button id="mobile-language-button"
-                  type="button"
-                  class="w-full inline-flex items-center px-4 py-3 text-base font-medium text-gray-700 dark:text-dark-primary hover:bg-gray-50 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors rounded-lg"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <span id="mobile-current-language-flag" role="img" aria-label="Selected language" class="mr-3 text-xl">🇺🇸</span>
-                  <span id="mobile-current-language" class="flex-1 text-left">English</span>
-                  <svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div id="mobile-language-menu" class="hidden absolute left-0 right-0 mt-2 py-2 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
-                  <div class="py-1">
-                    <button class="w-full text-left px-4 py-3 text-base hover:bg-gray-50 dark:hover:bg-dark-hover flex items-center" data-lang="en">
-                      <span class="mr-3 text-xl">🇺🇸</span>
-                      <span class="flex-1">English</span>
-                    </button>
-                    <button class="w-full text-left px-4 py-3 text-base hover:bg-gray-50 dark:hover:bg-dark-hover flex items-center" data-lang="es">
-                      <span class="mr-3 text-xl">🇪🇸</span>
-                      <span class="flex-1">Español</span>
-                    </button>
-                    <button class="w-full text-left px-4 py-3 text-base hover:bg-gray-50 dark:hover:bg-dark-hover flex items-center" data-lang="ja">
-                      <span class="mr-3 text-xl">🇯🇵</span>
-                      <span class="flex-1">日本語</span>
-                    </button>
-                    <button class="w-full text-left px-4 py-3 text-base hover:bg-gray-50 dark:hover:bg-dark-hover flex items-center" data-lang="ko">
-                      <span class="mr-3 text-xl">🇰🇷</span>
-                      <span class="flex-1">한국어</span>
-                    </button>
-                    <button class="w-full text-left px-4 py-3 text-base hover:bg-gray-50 dark:hover:bg-dark-hover flex items-center" data-lang="fr">
-                      <span class="mr-3 text-xl">🇫🇷</span>
-                      <span class="flex-1">Français</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <!-- (Removed legacy mobile language selector - replaced by the consolidated dropdown above) -->
 
-              <!-- Theme Toggle -->
-              <button 
-                id="mobile-theme-toggle"
-                class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                aria-label="Toggle theme"
-              >
-                <!-- Moon Icon (Dark Mode) -->
-                <svg
-                  id="mobile-theme-toggle-dark-icon"
-                  class="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
-                <!-- Sun Icon (Light Mode) -->
-                <svg
-                  id="mobile-theme-toggle-light-icon"
-                  class="h-6 w-6 hidden"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-              </button>
+              <!-- Removed last mobile theme toggle button as requested -->
             </div>
           </div>
         </div>
@@ -1636,7 +1563,7 @@
                   </table>
                 </div>
                 <div class="text-center mt-4">
-                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                  <a id="view-all-transactions-link" href="#" class="text-blue-600 font-semibold text-sm"
                     >VIEW ALL TRANSACTIONS →</a
                   >
                 </div>
@@ -1644,7 +1571,7 @@
               <!-- Token Dashboard -->
               <div class="bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700/50 rounded-lg p-5 shadow-sm dark:shadow-lg dark:shadow-black/20 transition-all duration-200">
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-lg font-semibold">Token Dashboard</h3>
+                  <h3 id="token-dashboard-title" class="text-lg font-semibold">Token Dashboard</h3>
                 </div>
                 <div class="overflow-x-auto">
                   <table class="w-full min-w-[600px]">
@@ -1662,7 +1589,7 @@
                   </table>
                 </div>
                 <div class="text-center mt-4">
-                  <a href="#" class="text-blue-600 font-semibold text-sm"
+                  <a id="visit-token-dashboard-link" href="#" class="text-blue-600 font-semibold text-sm"
                     >VISIT TOKEN DASHBOARD →</a
                   >
                 </div>
@@ -1754,7 +1681,7 @@
                     </table>
                   </div>
                   <div class="text-center mt-4">
-                    <a href="#" class="text-blue-600 font-semibold text-sm"
+                    <a id="visit-defi-dashboard-link" href="#" class="text-blue-600 font-semibold text-sm"
                       >VISIT DEFI DASHBOARD →</a
                     >
                   </div>
@@ -1770,7 +1697,7 @@
               <div
                 class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
               >
-                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                <h3 id="tps-chart-title" class="text-lg font-semibold mb-2 sm:mb-0">
                   Daily Transactions
                 </h3>
                 <div
@@ -1800,7 +1727,7 @@
               <div
                 class="flex flex-col sm:flex-row justify-between sm:items-center mb-4"
               >
-                <h3 class="text-lg font-semibold mb-2 sm:mb-0">
+                <h3 id="ping-chart-title" class="text-lg font-semibold mb-2 sm:mb-0">
                   Unique Active Addresses
                 </h3>
                 <div
@@ -1873,10 +1800,10 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Theme Toggle State Management
-        const mobileThemeLabel = document.getElementById('mobile-theme-label');
-        const mobileLangMenu = document.getElementById('mobile-language-menu');
-        const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
+  // Theme Toggle State Management
+  const mobileThemeLabel = document.getElementById('mobile-theme-label');
+  const mobileLangDropdown = document.getElementById('language-dropdown');
+  const mobileThemeBtn = document.getElementById('mobile-theme-toggle');
 
         function updateThemeLabels(isDark) {
             if (mobileThemeLabel) {
