@@ -38,7 +38,7 @@ The UI is designed to integrate with a backend alerting system. This allows it t
     1. ETH balance dropping below a set amount.
     2. No new blocks being produced for a specified time period (e.g., 5 minutes).
 
- Technology Stack
+ Technology Stack:
 This is a modern, lightweight front-end built with a focus on performance and maintainability.
 
      1. HTML5: Semantic and accessible markup.
@@ -46,7 +46,7 @@ This is a modern, lightweight front-end built with a focus on performance and ma
      3. JavaScript (Vanilla): Powers all client-side interactivity, theme management, and data rendering.
      4. React & Recharts: Utilized via CDN to render beautiful and interactive data visualization charts without a complex build setup.
 
- Running the UI
+ Running the UI:
  This project is self-contained within a single index.html file, requiring no installation or build steps.
 
      1.  the code as index.html.
